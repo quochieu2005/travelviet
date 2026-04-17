@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: laravel_app
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - mysql
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    container_name: react_app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+
+  mysql:
+    image: mysql:8
+    container_name: mysql_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: travelviet
+    ports:
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+    - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+    - mysql
