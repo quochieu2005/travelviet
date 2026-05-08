@@ -26,13 +26,17 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: react_app
+    container_name: src-frontend
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     ports:
-      - "5173:5173"
+      - "3000:3000"
     networks:
       - appnet
+    stdin_open: true 
+    tty: true 
+    restart: unless-stopped 
 
   mysql:
     image: mysql:8

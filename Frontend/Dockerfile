@@ -7,6 +7,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+EXPOSE 3000
 
-CMD ["npm", "start"]
+# Dùng cách này ổn định hơn trong Docker
+CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "3000"]
