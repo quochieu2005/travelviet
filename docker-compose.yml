@@ -8,6 +8,8 @@ services:
       - ./backend:/var/www
     depends_on:
       - mysql
+    networks:
+      - appnet
 
   nginx:
     image: nginx:latest
@@ -19,6 +21,8 @@ services:
       - ./docker/nginx:/etc/nginx/conf.d
     depends_on:
       - backend
+    networks:
+      - appnet
 
   frontend:
     build: ./frontend
@@ -27,6 +31,8 @@ services:
       - ./frontend:/app
     ports:
       - "5173:5173"
+    networks:
+      - appnet
 
   mysql:
     image: mysql:8
@@ -36,15 +42,23 @@ services:
       MYSQL_DATABASE: travelviet
     ports:
       - "3307:3306"
+    networks:
+      - appnet
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     restart: always
     ports:
-    - "8081:80"
+      - "8081:80"
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
     depends_on:
-    - mysql
+      - mysql
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
