@@ -9,6 +9,10 @@ class AdminAuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (auth()->guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return view('admin.login');
     }
 
@@ -19,7 +23,7 @@ class AdminAuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-
+    
         // Attempt to log in the admin
         if (auth()->guard('admin')->attempt($credentials)) {
             return redirect()->intended(route('admin.dashboard'));
@@ -31,9 +35,13 @@ class AdminAuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         auth()->guard('admin')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }

@@ -16,7 +16,7 @@
     <ul class="menu-inner py-1">
         <!-- Menu items - Copy từ file gốc của bạn -->
         <li class="menu-item active open">
-            <a href="#" class="menu-link">
+            <a href="{{ route('admin.dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
             </a>

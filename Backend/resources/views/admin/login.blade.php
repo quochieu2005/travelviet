@@ -73,7 +73,7 @@
                         <h4 class="mb-1">Chào mừng bạn trở lại!</h4>
                         <p class="mb-6">Đăng nhập để quản lý hệ thống</p>
 
-                        <form id="formAuthentication" method="POST" action="{{ route('admin.login') }}">
+                        <form id="formAuthentication" method="POST" action="{{ route('admin.login.submit') }}">
                             @csrf
 
                             <div class="mb-6">
