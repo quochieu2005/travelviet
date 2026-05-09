@@ -21,7 +21,11 @@
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="#" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
+                        <img src="{{ auth()->guard('admin')->user()->avatar
+                            ? auth()->guard('admin')->user()->avatar
+                            : asset('assets/img/avatars/1.png') }}"
+                            alt="{{ auth()->guard('admin')->user()->username }}" class="w-px-40 h-px-40 rounded-circle"
+                            style="object-fit: cover;">
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -30,13 +34,17 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset('assets/img/avatars/1.png') }}"
-                                            class="w-px-40 h-auto rounded-circle">
+                                        <img src="{{ auth()->guard('admin')->user()->avatar
+                                            ? auth()->guard('admin')->user()->avatar
+                                            : asset('assets/img/avatars/1.png') }}"
+                                            alt="{{ auth()->guard('admin')->user()->username }}"
+                                            class="w-px-40 h-px-40 rounded-circle" style="object-fit: cover;">
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ auth()->guard('admin')->user()->username }}</h6>
-                                    <small class="text-body-secondary">{{ auth()->guard('admin')->user()->email }}</small>
+                                    <small
+                                        class="text-body-secondary">{{ auth()->guard('admin')->user()->email }}</small>
                                 </div>
                             </div>
                         </a>
@@ -44,7 +52,14 @@
                     <li>
                         <div class="dropdown-divider my-1"></div>
                     </li>
-                    <li><a class="dropdown-item" href="#"><i class="bx bx-user me-3"></i> My Profile</a></li>
+
+                    <li><a class="dropdown-item" href="{{ route('admin.my.profile') }}"><i class="bx bx-user me-3"></i>
+                            My Profile</a></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('admin.reset.password') }}">
+                            <i class="bx bx-lock-alt me-3"></i> Reset Password
+                        </a>
+                    </li>
                     <li><a class="dropdown-item" href="#"><i class="bx bx-cog me-3"></i> Settings</a></li>
                     <li>
                         <form action="{{ route('admin.logout') }}" method="POST">
