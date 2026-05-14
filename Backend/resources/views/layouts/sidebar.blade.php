@@ -14,13 +14,28 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <!-- Menu items - Copy từ file gốc của bạn -->
-        <li class="menu-item active open">
+        <!-- Menu Dashboards -->
+        <li class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active open' : '' }}">
             <a href="{{ route('admin.dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
             </a>
         </li>
-        <!-- Thêm các menu khác vào đây... -->
+
+        <!-- Menu Destinations -->
+        <li class="menu-item {{ request()->routeIs('admin.destinations.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.destinations.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-map"></i>
+                <div class="text-truncate" data-i18n="Destinations">Destinations</div>
+            </a>
+        </li>
+
+        <!-- Menu Categories -->
+        <li class="menu-item {{ request()->routeIs('admin.categories.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.categories.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-category"></i>
+                <div class="text-truncate" data-i18n="Categories">Categories</div>
+            </a>
+        </li>
     </ul>
 </aside>

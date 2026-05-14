@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminAuthController extends Controller
 {
     public function showLoginForm()
     {
-        if (auth()->guard('admin')->check()) {
+
+        if (Auth::guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -18,30 +20,47 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validate the login form data
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|string|min:6',
         ]);
-    
-        // Attempt to log in the admin
-        if (auth()->guard('admin')->attempt($credentials)) {
-            return redirect()->intended(route('admin.dashboard'));
+
+        $credentials = $request->only('email', 'password');
+        // $remember    = $request->boolean('remember');
+        $remember = $request->input('remember_sync') === '1';
+
+        // if (Auth::guard('admin')->attempt($credentials, $remember)) {
+
+        //     dd([
+        //         'remember' => $remember,
+        //         'token' => Auth::guard('admin')->user()->remember_token,
+        //         'admin' => Auth::guard('admin')->user()->email,
+        //         'password' => Auth::guard('admin')->user()->password,
+        //         'remember_input' => $request->input('remember'), // xem giá trị thô từ form
+        //     ]);
+        // }
+
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('admin.dashboard'))
+                ->with('success', 'Đăng nhập thành công!');
         }
 
-        // If login fails, redirect back with an error message
-        return back()->withErrors([
-            'email' => 'Thông tin đăng nhập được cung cấp không khớp với hồ sơ của chúng tôi!',
-        ]);
+        return back()
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => 'Email hoặc mật khẩu không chính xác.']);
     }
 
     public function logout(Request $request)
     {
-        auth()->guard('admin')->logout();
+        Auth::guard('admin')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.login')
+            ->with('success', 'Đã đăng xuất thành công.');
     }
 }

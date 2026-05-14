@@ -72,9 +72,9 @@ class AdminController extends Controller
         }
     }
 
-    public function reset_password()
+    public function change_password()
     {
-        return view('admin.reset-password');
+        return view('admin.change-password');
     }
 
     public function update_password(Request $request)

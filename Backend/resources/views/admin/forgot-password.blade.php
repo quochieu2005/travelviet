@@ -1,22 +1,19 @@
-@extends('layouts.auth') {{-- Sẽ tạo layout riêng cho auth --}}
+@extends('layouts.auth')
 
-@section('title', 'Đăng nhập - Admin TravelViet')
+@section('title', 'Quên mật khẩu - Admin TravelViet')
 
 @section('content')
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
             <div class="authentication-inner">
-
-                <!-- Login Card -->
+                <!-- Forgot Password -->
                 <div class="card px-sm-6 px-0">
                     <div class="card-body">
-
                         <!-- Logo -->
-                        <div class="app-brand justify-content-center mb-4">
+                        <div class="app-brand justify-content-center mb-6">
                             <a href="{{ route('admin.login') }}" class="app-brand-link gap-2">
                                 <span class="app-brand-logo demo">
                                     <span class="text-primary">
-                                        <!-- Giữ nguyên SVG logo -->
                                         <svg width="25" viewBox="0 0 25 42" version="1.1"
                                             xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                             <defs>
@@ -69,123 +66,31 @@
                             </a>
                         </div>
                         <!-- /Logo -->
-
-                        <h4 class="mb-1">Chào mừng bạn trở lại!</h4>
-                        <p class="mb-6">Đăng nhập để quản lý hệ thống</p>
+                        <h4 class="mb-1">Quên mật khẩu? 🔒</h4>
+                        <p class="mb-6">Nhập địa chỉ email của bạn và chúng tôi sẽ gửi hướng dẫn để bạn đặt lại mật khẩu.
+                        </p>
 
                         @include('components._message')
-
-                        <form id="formAuthentication" method="POST" action="{{ route('admin.login.submit') }}">
+                        
+                        <form id="formAuthentication" class="mb-6" action="{{ route('admin.password.email') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="remember" value="1">
-
                             <div class="mb-6">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" id="email" name="email" value="{{ old('email') }}"
-                                    class="form-control @error('email') is-invalid @enderror" placeholder="Nhập email"
-                                    autocomplete="username email" required autofocus>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <input type="email" class="form-control" id="email" name="email"
+                                    placeholder="Nhập email của bạn" autofocus />
                             </div>
-
-                            <div class="mb-6">
-                                <label for="password" class="form-label">Mật khẩu</label>
-                                <div class="input-group input-group-merge">
-                                    <input type="password" id="password" name="password"
-                                        class="form-control @error('password') is-invalid @enderror"
-                                        placeholder="············" autocomplete="current-password" required>
-                                    <span class="input-group-text cursor-pointer toggle-password">
-                                        <i class="icon-base bx bx-hide"></i>
-                                    </span>
-                                </div>
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-8">
-                                <div class="d-flex justify-content-between">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="checkbox" id="remember-me" name="remember"
-                                            value="1">
-                                        <label class="form-check-label" for="remember-me">Ghi nhớ đăng nhập</label>
-                                    </div>
-                                    <a href="{{ route('admin.forgot.password') }}">Quên mật khẩu?</a>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary d-grid w-100">Đăng nhập</button>
+                            <button class="btn btn-primary d-grid w-100">Send Reset Link</button>
                         </form>
-
+                        <div class="text-center">
+                            <a href="{{ route('admin.login') }}" class="d-flex justify-content-center">
+                                <i class="icon-base bx bx-chevron-left me-1"></i>
+                                Back to login
+                            </a>
+                        </div>
                     </div>
                 </div>
+                <!-- /Forgot Password -->
             </div>
         </div>
     </div>
 @endsection
-
-@push('js')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const rememberCheck = document.getElementById('remember-me');
-            const form = document.getElementById('formAuthentication');
-
-            const savedRemember = getCookie('remember_checked');
-
-            if (savedRemember === '1') {
-                rememberCheck.checked = true;
-                emailInput.value = getCookie('remember_email') || '';
-                passwordInput.value = getCookie('remember_password') || '';
-            }
-
-            form.addEventListener('submit', function() {
-                if (rememberCheck.checked) {
-                    setCookie('remember_email', emailInput.value, 30);
-                    setCookie('remember_password', passwordInput.value, 30);
-                    setCookie('remember_checked', '1', 30);
-                } else {
-                    deleteCookie('remember_email');
-                    deleteCookie('remember_password');
-                    deleteCookie('remember_checked');
-                }
-            });
-
-            document.querySelectorAll('.toggle-password').forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const input = this.parentElement.querySelector('input');
-                    const icon = this.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.remove('bx-hide');
-                        icon.classList.add('bx-show');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.remove('bx-show');
-                        icon.classList.add('bx-hide');
-                    }
-                });
-            });
-
-            function setCookie(name, value, minutes) {
-                const d = new Date();
-                d.setTime(d.getTime() + (minutes * 60 * 1000));
-                document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() +
-                ';path=/';
-            }
-
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? decodeURIComponent(match[2]) : null;
-            }
-
-            function deleteCookie(name) {
-                document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-            }
-
-        });
-    </script>
-@endpush

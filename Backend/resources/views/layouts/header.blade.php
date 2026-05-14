@@ -37,12 +37,12 @@
                                         <img src="{{ auth()->guard('admin')->user()->avatar
                                             ? auth()->guard('admin')->user()->avatar
                                             : asset('assets/img/avatars/1.png') }}"
-                                            alt="{{ auth()->guard('admin')->user()->username }}"
+                                            alt="{{ auth()->guard('admin')->user()->full_name }}"
                                             class="w-px-40 h-px-40 rounded-circle" style="object-fit: cover;">
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">{{ auth()->guard('admin')->user()->username }}</h6>
+                                    <h6 class="mb-0">{{ auth()->guard('admin')->user()->full_name }}</h6>
                                     <small
                                         class="text-body-secondary">{{ auth()->guard('admin')->user()->email }}</small>
                                 </div>
@@ -56,8 +56,8 @@
                     <li><a class="dropdown-item" href="{{ route('admin.my.profile') }}"><i class="bx bx-user me-3"></i>
                             My Profile</a></li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.reset.password') }}">
-                            <i class="bx bx-lock-alt me-3"></i> Reset Password
+                        <a class="dropdown-item" href="{{ route('admin.change.password') }}">
+                            <i class="bx bx-lock-alt me-3"></i> Change Password
                         </a>
                     </li>
                     <li><a class="dropdown-item" href="#"><i class="bx bx-cog me-3"></i> Settings</a></li>
