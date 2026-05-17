@@ -37,5 +37,21 @@
                 <div class="text-truncate" data-i18n="Categories">Categories</div>
             </a>
         </li>
+
+        <!-- Menu Tours -->
+        <li class="menu-item {{ request()->routeIs('admin.tours.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.tours.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
+                <div class="text-truncate" data-i18n="Tours">Tours</div>
+            </a>
+        </li>
+
+        <!-- Menu Promotions -->
+        <li class="menu-item {{ request()->routeIs('admin.promotions.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.promotions.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-gift"></i>
+                <div class="text-truncate" data-i18n="Promotions">Promotions</div>
+            </a>
+        </li>
     </ul>
 </aside>

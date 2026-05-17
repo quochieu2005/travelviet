@@ -61,4 +61,9 @@ class Tour extends Model
     {
         return $this->hasMany(Wishlist::class);
     }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 }

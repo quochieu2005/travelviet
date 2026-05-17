@@ -23,7 +23,7 @@ cd travelviet
 4. Access
    ```
    Access
-    Frontend: http://localhost:5173
+    Frontend: http://localhost:3000
     Backend API: http://localhost:8000
     phpMyAdmin: http://localhost:8081
    ```

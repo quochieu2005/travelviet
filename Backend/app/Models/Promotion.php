@@ -12,13 +12,12 @@ class Promotion extends Model
 
     protected $fillable = [
         'code', 'type', 'value', 'start_date', 'end_date',
-        'min_order', 'usage_limit', 'is_active'
+        'min_order', 'usage_limit', 'status'
     ];
 
     protected $casts = [
         'value' => 'decimal:2',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'is_active' => 'boolean',
     ];
 }
