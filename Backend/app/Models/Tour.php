@@ -8,23 +8,54 @@ use Illuminate\Database\Eloquent\Model;
 class Tour extends Model
 {
     use HasFactory;
+
     protected $table = 'tours';
+
     protected $fillable = [
-        'title', 'slug', 'description', 'short_description', 'price_adult', 
-        'price_child', 'price_discount_percent', 'discount_price', 'availability',
-        'itinerary', 'start_date', 'end_date', 'max_people', 'duration_days',
-        'departure_location', 'destination_id', 'category_id', 'status', 
-        'views', 'meta_title', 'meta_description', 'included_services', 'excluded_services'
+        'title',
+        'slug',
+        'description',
+        'short_description',
+        'price_adult',
+        'price_child',
+        'price_discount_percent',
+        'price_child_discount_percent',
+        'discount_price',
+        'discount_price_child',
+        'availability',
+        'itinerary',
+        'start_date',
+        'end_date',
+        'max_people',
+        'duration_days',
+        'departure_location',
+        'destination_id',
+        'category_id',
+        'status',
+        'views',
+        'meta_title',
+        'meta_description',
+        'included_services',
+        'excluded_services',
     ];
 
     protected $casts = [
-        'price_adult' => 'decimal:2',
-        'price_child' => 'decimal:2',
-        'discount_price' => 'decimal:2',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'included_services' => 'array',
-        'excluded_services' => 'array',
+        // Dùng integer thay vì decimal:2 để tránh lỗi locale dấu phẩy/chấm
+        'price_adult'                  => 'integer',
+        'price_child'                  => 'integer',
+        'discount_price'               => 'integer',
+        'discount_price_child'         => 'integer',
+        'price_discount_percent'       => 'integer',
+        'price_child_discount_percent' => 'integer',
+        'availability'                 => 'integer',
+        'max_people'                   => 'integer',
+        'duration_days'                => 'integer',
+        'views'                        => 'integer',
+        'status'                       => 'boolean',
+        'start_date'                   => 'date',
+        'end_date'                     => 'date',
+        'included_services'            => 'array',
+        'excluded_services'            => 'array',
     ];
 
     public function destination()

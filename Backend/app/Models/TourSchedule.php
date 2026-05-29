@@ -10,14 +10,20 @@ class TourSchedule extends Model
     use HasFactory;
     protected $table = 'tour_schedules';
     protected $fillable = [
-        'tour_id', 'departure_date', 'return_date', 
-        'available_slots', 'price_override'
+        'tour_id',
+        'departure_date',
+        'return_date',
+        'price_override_child',
+        'available_slots',
+        'price_override',
+        'note'
     ];
 
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',
-        'price_override' => 'decimal:2',
+        'price_override'       => 'integer',
+        'price_override_child' => 'integer',
     ];
 
     public function tour()

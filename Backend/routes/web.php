@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ForgotPasswordController;
 use App\Http\Controllers\Admin\ResetPasswordController;
+use App\Http\Controllers\Backend\ImageController;
 use App\Http\Controllers\Backend\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,7 +53,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/categories/{categories}', [App\Http\Controllers\Backend\CategoriesController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{categories}', [App\Http\Controllers\Backend\CategoriesController::class, 'destroy'])->name('categories.destroy');
         Route::patch('/categories/{categories}/toggle-status', [App\Http\Controllers\Backend\CategoriesController::class, 'toggleStatus'])->name('categories.toggle-status');
-        
+
         // Tours routes
         Route::get('/tours', [App\Http\Controllers\Backend\ToursController::class, 'index'])->name('tours.index');
         Route::get('/tours/create', [App\Http\Controllers\Backend\ToursController::class, 'create'])->name('tours.create');
@@ -70,6 +71,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/promotions/{promotion}', [App\Http\Controllers\Backend\PromotionsController::class, 'update'])->name('promotions.update');
         Route::delete('/promotions/{promotion}', [App\Http\Controllers\Backend\PromotionsController::class, 'destroy'])->name('promotions.destroy');
         Route::patch('/promotions/{promotion}/toggle-status', [App\Http\Controllers\Backend\PromotionsController::class, 'toggleStatus'])->name('promotions.toggle-status');
+
+        // Image Tours routes
+        // Static routes trước khi resource để tránh xung đột với {id}
+        Route::post('/image-tours/update-sort-order', [App\Http\Controllers\Backend\ImageController::class, 'updateSortOrder'])->name('image-tours.update-sort-order');
+        Route::delete('/image-tours/delete-all-tour/{tour_id}', [App\Http\Controllers\Backend\ImageController::class, 'deleteAllImagesOfTour'])->name('image-tours.delete-all-tour');
+        Route::delete('image-tours/delete-all-system', [App\Http\Controllers\Backend\ImageController::class, 'deleteAllSystem'])->name('image-tours.delete-all-system');
+        // Dynamic routes sau resource
+        Route::get('/image-tours', [App\Http\Controllers\Backend\ImageController::class, 'index'])->name('image-tours.index');
+        Route::get('/image-tours/create', [App\Http\Controllers\Backend\ImageController::class, 'create'])->name('image-tours.create');
+        Route::post('/image-tours', [App\Http\Controllers\Backend\ImageController::class, 'store'])->name('image-tours.store');
+        Route::get('/image-tours/{id}/edit', [App\Http\Controllers\Backend\ImageController::class, 'edit'])->name('image-tours.edit');
+        Route::put('/image-tours/{id}', [App\Http\Controllers\Backend\ImageController::class, 'update'])->name('image-tours.update');
+        Route::delete('/image-tours/{id}', [App\Http\Controllers\Backend\ImageController::class, 'destroy'])->name('image-tours.destroy');
+
+        // Tour Schedules routes
+        Route::get('/tour-schedules', [App\Http\Controllers\Backend\TourSchedulesController::class, 'index'])->name('tour-schedules.index');
+        Route::get('/tour-schedules/create', [App\Http\Controllers\Backend\TourSchedulesController::class, 'create'])->name('tour-schedules.create');
+        Route::post('/tour-schedules', [App\Http\Controllers\Backend\TourSchedulesController::class, 'store'])->name('tour-schedules.store');
+        Route::get('/tour-schedules/{id}/edit', [App\Http\Controllers\Backend\TourSchedulesController::class, 'edit'])->name('tour-schedules.edit');
+        Route::put('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'update'])->name('tour-schedules.update');
+        Route::delete('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'destroy'])->name('tour-schedules.destroy');
+        
     });
 });
 

@@ -53,5 +53,21 @@
                 <div class="text-truncate" data-i18n="Promotions">Promotions</div>
             </a>
         </li>
+
+        <!-- Menu Images Tour -->
+        <li class="menu-item {{ request()->routeIs('admin.image-tours.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.image-tours.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-image"></i>
+                <div class="text-truncate" data-i18n="Images">Images</div>
+            </a>
+        </li>
+
+        <!-- Menu Tour Schedule -->
+        <li class="menu-item {{ request()->routeIs('admin.tour-schedules.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.tour-schedules.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                <div class="text-truncate" data-i18n="Tour Schedules">Tour Schedules</div>
+            </a>
+        </li>
     </ul>
 </aside>
