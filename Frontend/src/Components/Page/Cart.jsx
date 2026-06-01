@@ -10,6 +10,9 @@ export default function Cart() {
     new Date().toISOString().split("T")[0],
   );
 
+  const isTourItem = (item) =>
+    item.type === "tour" || (!item.type && item["price adult"] !== undefined);
+
   const increaseQty = (id, type) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
@@ -36,13 +39,18 @@ export default function Cart() {
     }
   };
 
-  // Tính subtotal dựa trên giá người lớn + trẻ em đã giảm
   const subtotal = cartItems.reduce((sum, item) => {
-    const priceAdult = parseFloat(item["discount price"] || item["price adult"] || 0);
-    const priceChild = parseFloat(item["discount price child"] || item["price child"] || 0);
-    const qtyAdult = item.quantityAdult || 1;
-    const qtyChild = item.quantityChild || 0;
-    return sum + priceAdult * qtyAdult + priceChild * qtyChild;
+    if (isTourItem(item)) {
+      const priceAdult = parseFloat(item["discount price"] || item["price adult"] || 0);
+      const priceChild = parseFloat(item["discount price child"] || item["price child"] || 0);
+      const qtyAdult = item.quantityAdult || 1;
+      const qtyChild = item.quantityChild || 0;
+      return sum + priceAdult * qtyAdult + priceChild * qtyChild;
+    } else {
+      // hotel, transport, restaurant — chỉ có item.price
+      const qty = item.quantityAdult || item.quantity || 1;
+      return sum + parseFloat(item.price || 0) * qty;
+    }
   }, 0);
 
   const vat = subtotal * 0.05;
@@ -78,7 +86,7 @@ export default function Cart() {
                   <h5>Your cart is currently empty</h5>
                   <p>Looks like you haven't added any bookings yet.</p>
                   <div className="d-flex justify-content-center gap-2">
-                    <a href="/hotels" className="btn btn-outline-warning">Browse Hotels</a>
+                    <a href="/Hotels" className="btn btn-outline-warning">Browse Hotels</a>
                     <a href="/transport" className="btn btn-outline-primary">Book Transport</a>
                     <a href="/restaurants" className="btn btn-outline-success">Find Restaurants</a>
                   </div>
@@ -97,15 +105,23 @@ export default function Cart() {
                     </thead>
                     <tbody>
                       {cartItems.map((item) => {
-                        const priceAdult = parseFloat(item["discount price"] || item["price adult"] || 0);
-                        const priceChild = parseFloat(item["discount price child"] || item["price child"] || 0);
+                        const tour = isTourItem(item);
+
+                        const priceAdult = tour
+                          ? parseFloat(item["discount price"] || item["price adult"] || 0)
+                          : parseFloat(item.price || 0);
+
+                        const priceChild = tour
+                          ? parseFloat(item["discount price child"] || item["price child"] || 0)
+                          : 0;
+
                         const qtyAdult = item.quantityAdult || 1;
                         const qtyChild = item.quantityChild || 0;
                         const itemTotal = priceAdult * qtyAdult + priceChild * qtyChild;
 
                         return (
                           <tr key={item.id}>
-                            {/* Cột tên tour */}
+                            {/* Cột tên */}
                             <td className="d-flex align-items-center gap-3">
                               <img
                                 src={item.image}
@@ -119,29 +135,50 @@ export default function Cart() {
                                 <br />
                                 <small className="text-muted">{item.location}</small>
                                 <br />
-                                <small className="text-capitalize text-warning">{item.duration}</small>
+                                {item.duration && (
+                                  <small className="text-capitalize text-warning">{item.duration}</small>
+                                )}
+                                {item.type && item.type !== "tour" && (
+                                  <small className="text-capitalize text-info"> ({item.type})</small>
+                                )}
                               </div>
                             </td>
 
-                            {/* Cột người lớn */}
+                            {/* Cột người lớn / số lượng */}
                             <td>
-                              <div className="small text-muted mb-1">{formatVND(priceAdult)} / người</div>
+                              <div className="small text-muted mb-1">
+                                {formatVND(priceAdult)} / {tour ? "người" : "đơn vị"}
+                              </div>
                               <div className="d-flex align-items-center gap-1">
-                                <button className="btn btn-sm btn-secondary" onClick={() => decreaseQty(item.id, "adult")}>-</button>
+                                <button
+                                  className="btn btn-sm btn-secondary"
+                                  onClick={() => decreaseQty(item.id, "adult")}
+                                >-</button>
                                 <span className="mx-1">{qtyAdult}</span>
-                                <button className="btn btn-sm btn-secondary" onClick={() => increaseQty(item.id, "adult")}>+</button>
+                                <button
+                                  className="btn btn-sm btn-secondary"
+                                  onClick={() => increaseQty(item.id, "adult")}
+                                >+</button>
                               </div>
                             </td>
 
-                            {/* Cột trẻ em */}
+                            {/* Cột trẻ em — chỉ hiện với tour có giá trẻ em */}
                             <td>
-                              {priceChild > 0 ? (
+                              {tour && priceChild > 0 ? (
                                 <>
-                                  <div className="small text-muted mb-1">{formatVND(priceChild)} / trẻ</div>
+                                  <div className="small text-muted mb-1">
+                                    {formatVND(priceChild)} / trẻ
+                                  </div>
                                   <div className="d-flex align-items-center gap-1">
-                                    <button className="btn btn-sm btn-secondary" onClick={() => decreaseQty(item.id, "child")}>-</button>
+                                    <button
+                                      className="btn btn-sm btn-secondary"
+                                      onClick={() => decreaseQty(item.id, "child")}
+                                    >-</button>
                                     <span className="mx-1">{qtyChild}</span>
-                                    <button className="btn btn-sm btn-secondary" onClick={() => increaseQty(item.id, "child")}>+</button>
+                                    <button
+                                      className="btn btn-sm btn-secondary"
+                                      onClick={() => increaseQty(item.id, "child")}
+                                    >+</button>
                                   </div>
                                 </>
                               ) : (

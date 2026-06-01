@@ -45,7 +45,7 @@
             "oldprice": 150,
             "rating": 4.6,
             "reviews": 180,
-            "tag": "",
+            "tag": "new",
             "image": "/Images/restaurant4.png"
         },
         {
@@ -57,7 +57,7 @@
             "oldprice": 120,
             "rating": 4.4,
             "reviews": 160,
-            "tag": "",
+            "tag": "feature",
             "image": "/Images/restaurant5.png"
         },
         {
@@ -69,7 +69,7 @@
             "oldprice": 160,
             "rating": 4.5,
             "reviews": 140,
-            "tag": "",
+            "tag": "new",
             "image": "/Images/restaurant6.png"
         },
         {
@@ -81,7 +81,7 @@
             "oldprice": 180,
             "rating": 4.7,
             "reviews": 130,
-            "tag": "",
+            "tag": "new",
             "image": "/Images/restaurant7.png"
         },
         {
@@ -93,7 +93,7 @@
             "oldprice": 150,
             "rating": 4.6,
             "reviews": 110,
-            "tag": "",
+            "tag": "feature",
             "image": "/Images/restaurant8.png"
         }
     ]

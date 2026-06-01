@@ -3,12 +3,12 @@
         {
             "id": 1,
             "name": "Hotel A",
-            "slug" : "hotel-a",
+            "slug": "hotel-a",
             "location": "City X",
             "rating": 4.5,
             "reviews": 120,
-            "price": 150,
-            "image": "Images/hotel_a.jpg",
+            "price": 150000,
+            "image": "/Images/hotel1.png",
             "features": "true",
             "description": "A luxurious hotel located in the heart of City X, offering stunning views and top-notch amenities.",
             "facilities": [
@@ -18,15 +18,15 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Airport Shuttle",
-                    "icon": "bi bi-shuttle-van"
+                    "icon": "bi bi-bus-front"
                 },
                 {
                     "name": "Swimming Pool",
-                    "icon": "bi bi-water"
+                    "icon": "bi bi-droplet-half"
                 },
                 {
                     "name": "Fitness Center",
@@ -37,12 +37,12 @@
         {
             "id": 2,
             "name": "Hotel B",
-            "slug" : "hotel-b",
+            "slug": "hotel-b",
             "location": "City Y",
             "rating": 4.0,
             "reviews": 80,
-            "price": 120,
-            "image": "Images/hotel_b.jpg",
+            "price": 120000,
+            "image": "/Images/hotel2.png",
             "features": "true",
             "description": "A charming hotel in City Y, known for its cozy atmosphere and excellent service.",
             "facilities": [
@@ -52,7 +52,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Pet-Friendly",
@@ -64,19 +64,19 @@
                 },
                 {
                     "name": "Laundry Service",
-                    "icon": "bi bi-basket"
+                    "icon": "bi bi-tshirt"
                 }
             ]
         },
         {
             "id": 3,
             "name": "Hotel C",
-            "slug" : "hotel-c",
+            "slug": "hotel-c",
             "location": "City Z",
             "rating": 4.8,
             "reviews": 200,
-            "price": 200,
-            "image": "Images/hotel_c.jpg",
+            "price": 2000000,
+            "image": "/Images/hotel3.png",
             "features": "true",
             "description": "An elegant hotel in City Z, offering a blend of modern luxury and traditional charm.",
             "facilities": [
@@ -86,7 +86,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Spa Services",
@@ -105,12 +105,12 @@
         {
             "id": 4,
             "name": "Hotel D",
-            "slug" : "hotel-d",
+            "slug": "hotel-d",
             "location": "City W",
             "rating": 3.5,
             "reviews": 50,
-            "price": 80,
-            "image": "Images/hotel_d.jpg",
+            "price": 800000,
+            "image": "/Images/hotel4.png",
             "features": "true",
             "description": "A budget-friendly hotel in City W, perfect for travelers looking for comfort without breaking the bank.",
             "facilities": [
@@ -120,7 +120,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "24-Hour Front Desk",
@@ -139,12 +139,12 @@
         {
             "id": 5,
             "name": "Hotel E",
-            "slug" : "hotel-e",
+            "slug": "hotel-e",
             "location": "City V",
             "rating": 4.2,
             "reviews": 90,
-            "price": 130,
-            "image": "Images/hotel_e.jpg",
+            "price": 1300000,
+            "image": "/Images/hotel5.png",
             "features": "true",
             "description": "A stylish hotel in City V, offering a unique blend of contemporary design and local culture.",
             "facilities": [
@@ -154,7 +154,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Pet-Friendly",
@@ -173,12 +173,12 @@
         {
             "id": 6,
             "name": "Hotel F",
-            "slug" : "hotel-f",
+            "slug": "hotel-f",
             "location": "City U",
             "rating": 4.7,
             "reviews": 150,
-            "price": 180,
-            "image": "Images/hotel_f.jpg",
+            "price": 1800000,
+            "image": "/Images/hotel6.png",
             "features": "true",
             "description": "A boutique hotel in City U, known for its personalized service and artistic ambiance.",
             "facilities": [
@@ -188,7 +188,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Spa Services",
@@ -207,12 +207,12 @@
         {
             "id": 7,
             "name": "Hotel G",
-            "slug" : "hotel-g",
+            "slug": "hotel-g",
             "location": "City T",
             "rating": 3.8,
             "reviews": 60,
-            "price": 90,
-            "image": "Images/hotel_g.jpg",
+            "price": 9000000,
+            "image": "/Images/hotel7.png",
             "features": "true",
             "description": "A comfortable hotel in City T, offering great value for budget-conscious travelers.",
             "facilities": [
@@ -222,7 +222,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "24-Hour Front Desk",
@@ -241,12 +241,12 @@
         {
             "id": 8,
             "name": "Hotel H",
-            "slug" : "hotel-h",
+            "slug": "hotel-h",
             "location": "City S",
             "rating": 4.3,
             "reviews": 110,
-            "price": 140,
-            "image": "Images/hotel_h.jpg",
+            "price": 1400000,
+            "image": "/Images/hotel8.png",
             "features": "true",
             "description": "A modern hotel in City S, offering a blend of comfort and style for business and leisure travelers.",
             "facilities": [
@@ -256,7 +256,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Business Center",
@@ -275,12 +275,12 @@
         {
             "id": 9,
             "name": "Hotel I",
-            "slug" : "hotel-i",
+            "slug": "hotel-i",
             "location": "City R",
             "rating": 4.6,
             "reviews": 130,
-            "price": 160,
-            "image": "Images/hotel_i.jpg",
+            "price": 1600000,
+            "image": "/Images/hotel9.png",
             "features": "true",
             "description": "A luxurious hotel in City R, offering exceptional service and world-class amenities.",
             "facilities": [
@@ -290,7 +290,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Spa Services",
@@ -309,12 +309,12 @@
         {
             "id": 10,
             "name": "Hotel J",
-            "slug" : "hotel-j",
+            "slug": "hotel-j",
             "location": "City Q",
             "rating": 4.1,
             "reviews": 70,
-            "price": 110,
-            "image": "Images/hotel_j.jpg",
+            "price": 11000000,
+            "image": "/Images/hotel4.png",
             "features": "true",
             "description": "A stylish hotel in City Q, offering a unique blend of contemporary design and local culture.",
             "facilities": [
@@ -324,7 +324,7 @@
                 },
                 {
                     "name": "Breakfast Included",
-                    "icon": "bi bi-cup-straw"
+                    "icon": "bi bi-cup-hot"
                 },
                 {
                     "name": "Pet-Friendly",

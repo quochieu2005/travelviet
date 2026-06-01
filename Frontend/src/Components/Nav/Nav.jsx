@@ -66,7 +66,7 @@ function Nav() {
                                     </span>
                                 </a>
 
-                                <button className='btn sign-up btn-custome text-white rounded-5 px-4 py-2 fs-6 fw-semibold'>Sign Up</button>
+                                <a href='/Login' className='btn sign-up btn-custome text-white rounded-5 px-4 py-2 fs-6 fw-semibold'>Log In</a>
                             </div>
 
                             {/* Nút toggle menu cho mobile */}
@@ -92,31 +92,31 @@ function Nav() {
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>Tours</a>
+                                    <a href="/Tours" className='nav-link' onClick={closeMenu}>Tours</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>Hotels</a>
+                                    <a href="/Hotels" className='nav-link' onClick={closeMenu}>Hotels</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>Transports</a>
+                                    <a href="/Transports" className='nav-link' onClick={closeMenu}>Transports</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>Restaurants</a>
+                                    <a href="/Restaurants" className='nav-link' onClick={closeMenu}>Restaurants</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>About</a>
+                                    <a href="/About" className='nav-link' onClick={closeMenu}>About</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>New</a>
+                                    <a href="/Blog" className='nav-link' onClick={closeMenu}>New</a>
                                 </li>
 
                                 <li className="nav-items position-relative">
-                                    <a href="#" className='nav-link' onClick={closeMenu}>Contact</a>
+                                    <a href="/Contact" className='nav-link' onClick={closeMenu}>Contact</a>
                                 </li>
                             </ul>
                         </div>

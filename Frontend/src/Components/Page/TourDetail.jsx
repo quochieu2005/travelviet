@@ -54,11 +54,12 @@ function TourDetail() {
         const alreadyAdded = cartItems.find((item) => item.id === tour.id);
 
         if (!alreadyAdded) {
-            addTOCart(tour);
+            addTOCart({ ...tour, type: 'tour' });
 
             toast.success('Tour Added to Cart!', {
                 position: 'top-right',
                 autoClose: 1500,
+                theme: 'dark',
             });
 
             setTimeout(() => {
@@ -68,6 +69,7 @@ function TourDetail() {
             toast.info('Tour already added to cart!', {
                 position: 'top-right',
                 autoClose: 1500,
+                theme: 'dark',
             });
         }
     }
@@ -125,20 +127,20 @@ function TourDetail() {
                                 {/* Giá người lớn */}
                                 <div>
                                     <strong>From <span className="fs-2"></span>
-                                        {tour['price discount percent'] > 0 ? (
+                                        {selectedTour['price discount percent'] > 0 ? (
                                             <>
                                                 <span className="text-decoration-line-through text-muted me-2">
-                                                    {tour['price adult'].toLocaleString('vi-VN')}₫
+                                                    {selectedTour['price adult'].toLocaleString('vi-VN')}₫
                                                 </span>
                                                 <span className="text-danger fw-bold">
-                                                    {tour['discount price'].toLocaleString('vi-VN')}₫
+                                                    {selectedTour['discount price'].toLocaleString('vi-VN')}₫
                                                 </span>
                                                 <span className="badge bg-danger rounded-pill ms-2">
-                                                    -{tour['price discount percent']}%
+                                                    -{selectedTour['price discount percent']}%
                                                 </span>
                                             </>
                                         ) : (
-                                            <span>{tour['price adult'].toLocaleString('vi-VN')}₫</span>
+                                            <span>{selectedTour['price adult'].toLocaleString('vi-VN')}₫</span>
                                         )}
                                     </strong>
                                 </div>
@@ -146,20 +148,20 @@ function TourDetail() {
                                 {/* Giá trẻ em */}
                                 <div>
                                     <strong>From <span className="fs-2"></span>
-                                        {tour['price child discount percent'] > 0 ? (
+                                        {selectedTour['price child discount percent'] > 0 ? (
                                             <>
                                                 <span className="text-decoration-line-through text-muted me-2">
-                                                    {tour['price child'].toLocaleString('vi-VN')}₫
+                                                    {selectedTour['price child'].toLocaleString('vi-VN')}₫
                                                 </span>
                                                 <span className="text-danger fw-bold">
-                                                    {tour['discount price child'].toLocaleString('vi-VN')}₫
+                                                    {selectedTour['discount price child'].toLocaleString('vi-VN')}₫
                                                 </span>
                                                 <span className="badge bg-danger rounded-pill ms-2">
-                                                    -{tour['price child discount percent']}%
+                                                    -{selectedTour['price child discount percent']}%
                                                 </span>
                                             </>
                                         ) : (
-                                            <span>{tour['price child'].toLocaleString('vi-VN')}₫</span>
+                                            <span>{selectedTour['price child'].toLocaleString('vi-VN')}₫</span>
                                         )}
                                     </strong>
                                 </div>
@@ -302,10 +304,10 @@ function TourDetail() {
                                     </h3>
                                 </div>
 
-                                <form action="">
+                                <div>
                                     <div className="mb-3">
                                         <label className="text-light p-2">Guests</label>
-                                        <select name="" id="" className="form-select bg-dark border-secondary text-white">
+                                        <select className="form-select bg-dark border-secondary text-white">
                                             <option>1 guest</option>
                                             <option>2 guests</option>
                                             <option>3 guests</option>
@@ -320,7 +322,7 @@ function TourDetail() {
                                         <i className="ri-shopping-cart-line fs-5"></i>
                                         <span>Book Now</span>
                                     </button>
-                                </form>
+                                </div>
 
                                 <div className="small mt-4 text-muted border-top pt-3">
                                     <i className="ri-check-double-line text-success me-2"></i>
