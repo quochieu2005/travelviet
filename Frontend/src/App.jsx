@@ -1,6 +1,6 @@
 import { useState } from 'react'
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext' // Thêm import AuthProvider
 
 import Nav from './Components/Nav/Nav'
 import Index from './Components/Page/Index'
@@ -20,31 +20,29 @@ import Register from './Components/Page/Register'
 import Profile from './Components/Page/Profile'
 
 function App() {
-
-
   return (
-    <>
+    <AuthProvider> 
       <Router>
         <Nav />
         <Routes>
-          <Route path = '/' element = { <Index /> } />
-          <Route path = '/TourDetail/:slug' element = { <TourDetailPage />} />
-          <Route path = '/cart' element = { <CartPage />} />
-          <Route path = '/booking-confirmation' element = { <BookingComfirmation />} />
-          <Route path = '/Tours' element = { <Tours /> } />
-          <Route path = '/Hotels' element = { <Hotels /> } />
-          <Route path = '/Transports' element = { <Transport /> } />
-          <Route path = '/Restaurants' element = { <Restaurants /> } />
-          <Route path = '/About' element = { <About /> } />
-          <Route path = '/Blog' element = { <BlogSection /> } />
-          <Route path = '/Contact' element = { <ContactSection /> } />
-          <Route path = '/Login' element = { <Login /> } />
-          <Route path = '/Register' element = { <Register /> } />
-          <Route path = '/Myprofile' element = { <Profile /> } />
+          <Route path='/' element={<Index />} />
+          <Route path='/TourDetail/:slug' element={<TourDetailPage />} />
+          <Route path='/cart' element={<CartPage />} />
+          <Route path='/booking-confirmation' element={<BookingComfirmation />} />
+          <Route path='/Tours' element={<Tours />} />
+          <Route path='/Hotels' element={<Hotels />} />
+          <Route path='/Transports' element={<Transport />} />
+          <Route path='/Restaurants' element={<Restaurants />} />
+          <Route path='/About' element={<About />} />
+          <Route path='/Blog' element={<BlogSection />} />
+          <Route path='/Contact' element={<ContactSection />} />
+          <Route path='/Login' element={<Login />} />
+          <Route path='/Register' element={<Register />} />
+          <Route path='/profile' element={<Profile />} />
         </Routes>
-        <Footer/>
+        <Footer />
       </Router>
-    </>
+    </AuthProvider>
   )
 }
 

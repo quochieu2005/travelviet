@@ -1,65 +1,133 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { sendContact } from '../../services/contactService'; // điều chỉnh path cho phù hợp
 
 function ContactSection() {
+    const [formData, setFormData] = useState({
+        full_name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setSuccess('');
+        setError('');
+
+        try {
+            const response = await sendContact(formData);
+            setSuccess(response.message || 'Gửi thành công!');
+            setFormData({ full_name: '', email: '', phone: '', subject: '', message: '' });
+        } catch (err) {
+            setError(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <>
-            <div className="contact-section main-wrapper">
-                <div className="container">
-                    <div className="row justify-content-center">
-                        <div className="col-xl-7 col-lg-9">
-                            <div className="contact-card">
-                                <h4 className="contact-heading">
-                                    Feel free to Write Us Anytime
-                                </h4>
+        <div className="contact-section main-wrapper">
+            <div className="container">
+                <div className="row justify-content-center">
+                    <div className="col-xl-7 col-lg-9">
+                        <div className="contact-card">
+                            <h4 className="contact-heading">Feel free to Write Us Anytime</h4>
 
-                                <form action="post" className='contact-form'>
-                                    <div className="row g-4">
-                                        <div className="col-sm-6">
-                                            <input type="text" className='form-control custom-input' name="" id="" placeholder='Enter Your Name' />
-                                        </div>
+                            {success && <div className="alert alert-success">{success}</div>}
+                            {error && <div className="alert alert-danger">{error}</div>}
 
-                                        <div className="col-sm-6">
-                                            <input type="email" className='form-control custom-input' name="" id="" placeholder='Enter Your Email' />
-                                        </div>
-
-                                        <div className="col-sm-6">
-                                            <input type="text" className='form-control custom-input' name="" id="" placeholder='Your Phone' />
-                                        </div>
-
-                                        <div className="col-sm-6">
-                                            <input type="text" className='form-control custom-input' name="" id="" placeholder='Select Subject' />
-                                        </div>
-
-                                        <div className="col-sm-12">
-                                            <textarea type="text" className='form-control custom-textarea' rows="5" name="" id="" placeholder='Enter Your Message...'></textarea>
-                                        </div>
-
+                            <form onSubmit={handleSubmit} className='contact-form'>
+                                <div className="row g-4">
+                                    <div className="col-sm-6">
+                                        <input 
+                                            type="text" 
+                                            className='form-control custom-input' 
+                                            name="full_name" 
+                                            value={formData.full_name}
+                                            onChange={handleChange}
+                                            placeholder='Enter Your Name' 
+                                            required 
+                                        />
                                     </div>
 
-                                    <div className="mt-4">
-                                        <button type='submit' className="btn send-btn">Send Message</button>
+                                    <div className="col-sm-6">
+                                        <input 
+                                            type="email" 
+                                            className='form-control custom-input' 
+                                            name="email" 
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            placeholder='Enter Your Email' 
+                                            required 
+                                        />
                                     </div>
 
-                                </form>
+                                    <div className="col-sm-6">
+                                        <input 
+                                            type="text" 
+                                            className='form-control custom-input' 
+                                            name="phone" 
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder='Your Phone' 
+                                            required 
+                                        />
+                                    </div>
 
-                            </div>
+                                    <div className="col-sm-6">
+                                        <input 
+                                            type="text" 
+                                            className='form-control custom-input' 
+                                            name="subject" 
+                                            value={formData.subject}
+                                            onChange={handleChange}
+                                            placeholder='Select Subject' 
+                                            required 
+                                        />
+                                    </div>
+
+                                    <div className="col-sm-12">
+                                        <textarea 
+                                            className='form-control custom-textarea' 
+                                            rows="5" 
+                                            name="message" 
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                            placeholder='Enter Your Message...' 
+                                            required
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4">
+                                    <button 
+                                        type='submit' 
+                                        className="btn send-btn" 
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Đang gửi...' : 'Send Message'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-
-                <div className="map-container">
-                    <iframe
-                        title='Google Map' 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15743722.794960847!2d95.23365315582103!3d15.555151669615714!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31157a4d736a1e5f%3A0xb03bb0c9e2fe62be!2zVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1780302719518!5m2!1svi!2s"  
-                        className='map-frame'
-                        allowFullScreen         
-                        loading="lazy">
-                    </iframe>
-                </div>
-
             </div>
-        </>
-    )
+        </div>
+    );
 }
 
-export default ContactSection
+export default ContactSection;

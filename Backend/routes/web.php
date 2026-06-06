@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ForgotPasswordController;
 use App\Http\Controllers\Admin\ResetPasswordController;
+use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\ImageController;
 use App\Http\Controllers\Backend\PromotionsController;
 use Illuminate\Support\Facades\Route;
@@ -93,6 +94,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'update'])->name('tour-schedules.update');
         Route::delete('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'destroy'])->name('tour-schedules.destroy');
         
+        // Contact routes
+        Route::get('/contacts', [App\Http\Controllers\Backend\ContactController::class, 'index'])->name('contacts.index');
+        Route::get('/contacts/{id}', [App\Http\Controllers\Backend\ContactController::class, 'show'])->name('contacts.show');
+        Route::put('/contacts/{id}/reply', [App\Http\Controllers\Backend\ContactController::class, 'reply'])->name('contacts.reply');
+
+        // Blog Categories - đặt trước resource blogs để tránh conflict
+        Route::resource('blog-categories', BlogCategoryController::class);
+        Route::patch('blog-categories/{slug}/toggle-status', [BlogCategoryController::class, 'toggleStatus'])->name('blog-categories.toggle-status');
+
+        // Blog Post Routes
+        Route::resource('blogs', \App\Http\Controllers\Backend\BlogController::class);
     });
 });
 

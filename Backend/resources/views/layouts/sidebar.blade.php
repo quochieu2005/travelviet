@@ -69,5 +69,48 @@
                 <div class="text-truncate" data-i18n="Tour Schedules">Tour Schedules</div>
             </a>
         </li>
+
+        <!-- Menu Contacts -->
+        <li class="menu-item {{ request()->routeIs('admin.contacts.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.contacts.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-phone"></i>
+                <div class="text-truncate" data-i18n="Contacts">Contacts</div>
+            </a>
+        </li>
+
+        <li
+            class="menu-item {{ request()->routeIs('admin.blog-categories.*') || request()->routeIs('admin.blogs.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-blog"></i>
+                <div class="text-truncate" data-i18n="Blog">Blog</div>
+            </a>
+
+            <ul class="menu-sub">
+                <!-- Danh mục blog -->
+                <li class="menu-item {{ request()->routeIs('admin.blog-categories.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.blog-categories.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-category"></i>
+                        <div class="text-truncate" data-i18n="Categories">Danh mục</div>
+                    </a>
+                </li>
+
+                <!-- Bài viết blog -->
+                <li class="menu-item {{ request()->routeIs('admin.blogs.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.blogs.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-news"></i>
+                        <div class="text-truncate" data-i18n="Posts">Bài viết</div>
+                    </a>
+                </li>
+
+                <!-- Bình luận (nếu có) -->
+                <li class="menu-item">
+                    <a href="javascript:void(0);" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-comment"></i>
+                        <div class="text-truncate" data-i18n="Comments">Bình luận</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
     </ul>
 </aside>

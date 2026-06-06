@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TravelViet</title>
 
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Origin-Trial" content="Your-Origin-Trial-Key" />
   <!-- // Remix Icon CDN -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css" rel="stylesheet" />
   <!-- // Bootstrap Icon CDN -->
@@ -24,6 +26,18 @@
   <!-- // Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/src/main.jsx"></script>
+  <script>
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '1701705057510231',
+        cookie: true,
+        xfbml: true,
+        version: 'v19.0'
+      });
+    };
+  </script>
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js">
+  </script>
 </body>
 
 </html>

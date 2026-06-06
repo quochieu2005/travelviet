@@ -1,14 +1,20 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { CartProvider } from './context/CartContext.jsx'
-import './index.css'
-import App from './App.jsx'
-import 'bootstrap-icons/font/bootstrap-icons.css'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+import { CartProvider } from './context/CartContext.jsx';
+import './index.css';
+import App from './App.jsx';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <CartProvider>
-      <App />
-    </CartProvider>
-  </StrictMode>,
-)
+    <GoogleOAuthProvider
+      clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+    >
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </GoogleOAuthProvider>
+  </StrictMode>
+);
