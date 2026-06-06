@@ -23,6 +23,11 @@ class Destination extends Model
         return $this->hasMany(Tour::class);
     }
 
+    public function hotels()
+    {
+        return $this->hasMany(Hotel::class);
+    }
+
     public function getRouteKeyName()
     {
         return 'slug';

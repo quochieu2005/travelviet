@@ -46,6 +46,14 @@
             </a>
         </li>
 
+        {{-- Menu Hotels --}}
+        <li class="menu-item {{ request()->routeIs('admin.hotels.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.hotels.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-building-house"></i>
+                <div class="text-truncate" data-i18n="Hotels">Hotels</div>
+            </a>
+        </li>
+
         <!-- Menu Promotions -->
         <li class="menu-item {{ request()->routeIs('admin.promotions.*') ? 'active open' : '' }}">
             <a href="{{ route('admin.promotions.index') }}" class="menu-link">
@@ -75,6 +83,27 @@
             <a href="{{ route('admin.contacts.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-phone"></i>
                 <div class="text-truncate" data-i18n="Contacts">Contacts</div>
+            </a>
+        </li>
+
+        <!-- Menu Pricing -->
+        <li class="menu-item {{ request()->routeIs('admin.pricing.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.pricing.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+                <div class="text-truncate" data-i18n="Pricing">Gói giá</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ request()->routeIs('admin.pricing-inquiries.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.pricing-inquiries.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-envelope"></i>
+                <div class="text-truncate" data-i18n="Inquiries">Yêu cầu đăng ký</div>
+                @php
+                    $pendingCount = App\Models\PricingInquiry::where('status', 'pending')->count();
+                @endphp
+                @if ($pendingCount > 0)
+                    <span class="badge bg-danger rounded-pill ms-2">{{ $pendingCount }}</span>
+                @endif
             </a>
         </li>
 

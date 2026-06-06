@@ -1,20 +1,37 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../../context/CartContext'
-import hotelData from '../../data/Hotel.json'
 import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import 'bootstrap-icons/font/bootstrap-icons.css'  // ✅ Thêm import Bootstrap Icons
+import 'bootstrap-icons/font/bootstrap-icons.css'
+import hotelService from '../../services/hotelService'
 
 function Hotels() {
-
     const [visibleCount, setVisibleCount] = useState(6);
+    const [hotels, setHotels] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const { cartItems, addTOCart } = useContext(CartContext);
 
-    const hotels = hotelData.hotels;
+    // Fetch hotels from API using service
+    useEffect(() => {
+        const loadHotels = async () => {
+            try {
+                setLoading(true);
+                const data = await hotelService.getHotels();
+                setHotels(data);
+            } catch (error) {
+                console.error('Error:', error);
+                setHotels([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadHotels();
+    }, []);
 
     const getImage = (img) => {
+        if (!img) return '';
         const name = img.split('/').pop();
         return new URL(`../../assets/${name}`, import.meta.url).href;
     }
@@ -134,7 +151,7 @@ function Hotels() {
                                         <div className="hotel-card p-3 shadow-sm h-10">
                                             <div className="position-relative mb-3">
                                                 <img
-                                                    src={getImage(hotel.image)}
+                                                    src={hotel.thumbnail}
                                                     className="img-fluid w-100 rounded-3"
                                                     alt={hotel.name}
                                                 />
@@ -151,9 +168,8 @@ function Hotels() {
                                                     {hotel.location}
                                                 </div>
 
-                                                {/* ✅ ĐÃ SỬA: Dùng trực tiếp icon từ JSON (Bootstrap Icons) */}
                                                 <div className="d-flex flex-wrap gap-2 text-muted mb-3 small">
-                                                    {hotel.facilities.map((item, idx) => (
+                                                    {hotel.facilities?.map((item, idx) => (
                                                         <span key={idx} className='d-flex align-items-center'>
                                                             <i className={`${item.icon} me-1`}></i>
                                                             {item.name}
@@ -163,7 +179,7 @@ function Hotels() {
 
                                                 <div className="d-flex justify-content-between align-items-center mt-auto">
                                                     <span className='fw-semibold text-primary'>
-                                                        {(hotel.price).toLocaleString('vi-VN')}₫ <small>/Person</small>
+                                                        {Number(hotel.price).toLocaleString('vi-VN', { maximumFractionDigits: 0 })}₫ <small>/Person</small>
                                                     </span>
 
                                                     <button

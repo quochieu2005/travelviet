@@ -56,7 +56,8 @@ class BlogApiController extends Controller
                     'slug' => $post->category?->slug,
                 ],
                 'author' => [
-                    'name' => $post->author?->name,
+                    'author_avatar' => $post->author?->avatar ,
+                    'name'   => $post->author?->full_name ?? 'Admin',
                     'email' => $post->author?->email,
                 ],
                 'is_featured' => (bool)$post->is_featured,
@@ -95,7 +96,8 @@ class BlogApiController extends Controller
                         'slug' => $post->category?->slug,
                     ],
                     'author' => [
-                        'name' => $post->author?->name,
+                        'author_avatar' => $post->author?->avatar ,
+                        'name'   => $post->author?->full_name ?? 'Admin',
                     ],
                 ];
             });
@@ -142,7 +144,8 @@ class BlogApiController extends Controller
                     'slug' => $post->category?->slug,
                 ],
                 'author' => [
-                    'name' => $post->author?->name,
+                    'author_avatar' => $post->author?->avatar ,
+                    'name'   => $post->author?->full_name ?? 'Admin',
                     'email' => $post->author?->email,
                 ],
                 'is_featured' => (bool)$post->is_featured,

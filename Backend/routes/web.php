@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ForgotPasswordController;
 use App\Http\Controllers\Admin\ResetPasswordController;
 use App\Http\Controllers\Backend\BlogCategoryController;
 use App\Http\Controllers\Backend\ImageController;
+use App\Http\Controllers\backend\PricingPlanController;
 use App\Http\Controllers\Backend\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
@@ -93,7 +94,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/tour-schedules/{id}/edit', [App\Http\Controllers\Backend\TourSchedulesController::class, 'edit'])->name('tour-schedules.edit');
         Route::put('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'update'])->name('tour-schedules.update');
         Route::delete('/tour-schedules/{id}', [App\Http\Controllers\Backend\TourSchedulesController::class, 'destroy'])->name('tour-schedules.destroy');
-        
+
         // Contact routes
         Route::get('/contacts', [App\Http\Controllers\Backend\ContactController::class, 'index'])->name('contacts.index');
         Route::get('/contacts/{id}', [App\Http\Controllers\Backend\ContactController::class, 'show'])->name('contacts.show');
@@ -105,6 +106,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Blog Post Routes
         Route::resource('blogs', \App\Http\Controllers\Backend\BlogController::class);
+
+        // Pricing Routes
+        Route::resource('pricing', PricingPlanController::class);
+
+        // Quản lý đơn đăng ký gói giá
+        Route::get('pricing-inquiries', [App\Http\Controllers\Backend\PricingInquiryController::class, 'index'])
+            ->name('pricing-inquiries.index');
+        Route::get('pricing-inquiries/{id}', [App\Http\Controllers\Backend\PricingInquiryController::class, 'show'])
+            ->name('pricing-inquiries.show');
+        Route::delete('pricing-inquiries/{id}', [App\Http\Controllers\Backend\PricingInquiryController::class, 'destroy'])
+            ->name('pricing-inquiries.destroy');
+        Route::put('pricing-inquiries/{id}/status', [App\Http\Controllers\Backend\PricingInquiryController::class, 'updateStatus'])
+            ->name('pricing-inquiries.update-status');
+
+        // Hotels Route
+        Route::resource('hotels', App\Http\Controllers\backend\HotelController::class);
+
     });
 });
 

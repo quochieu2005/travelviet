@@ -11,18 +11,13 @@ import user2 from "../../assets/user-2.png"
 import user3 from "../../assets/user-3.png"
 import user4 from "../../assets/user-4.jpeg"
 import hand from "../../assets/hand.png"
-import destination1 from "../../assets/destination-1.png"
-import destination2 from "../../assets/destination-2.png"
-import destination3 from "../../assets/destination-3.jpeg"
-import destination4 from "../../assets/destination-4.png"
-import destination5 from "../../assets/destination-5.png"
-import destination6 from "../../assets/destination-6.png"
-import destination7 from "../../assets/destination-7.png"
+
 import Explore1 from "../../assets/explore-1.svg"
 import Explore2 from "../../assets/explore-2.svg"
 import Explore3 from "../../assets/explore-3.svg"
 import Explore4 from "../../assets/explore-4.svg"
 import Explore5 from "../../assets/explore-5.svg"
+
 import ExploreImg1 from "../../assets/explore-img1.png"
 import ExploreImg2 from "../../assets/explore-img2.png"
 import ExploreImg3 from "../../assets/explore-img3.png"
@@ -37,15 +32,14 @@ import brand3 from "../../assets/brand-3.jpeg"
 import brand4 from "../../assets/brand-4.png"
 import brand5 from "../../assets/brand-5.png"
 import news4 from "../../assets/news-4.png"
-import news5 from "../../assets/news-5.png"
-import news6 from "../../assets/news-6.png"
 
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 import { tourService } from "../../services/tourService";
+import { getPricingPlans, submitPricingInquiry } from '../../services/aboutApi';
 
 function Index() {
-    
+
     const [tours, setTours] = useState([]);
     const [destinations, setDestinations] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -55,12 +49,23 @@ function Index() {
     const [brands, setBrands] = useState([]);
     const [tourImages, setTourImages] = useState({});
     const [loading, setLoading] = useState(true);
+    const [plans, setPlans] = useState([]);
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+    const [submitting, setSubmitting] = useState(false);
+    const [toastMsg, setToastMsg] = useState(null);
     const [filters, setFilters] = useState({
         destination: '',
         tourType: '',
         dateFrom: '',
         guests: ''
     });
+
+    // State cho random data
+    const [randomDestinations, setRandomDestinations] = useState([]);
+    const [randomFeaturedTours, setRandomFeaturedTours] = useState([]);
+    const [randomWinterTours, setRandomWinterTours] = useState([]);
 
     const { cartItems, addTOCart } = useContext(CartContext);
     const imageModules = import.meta.glob('../../assets/*.{png,jpg,jpeg}', { eager: true });
@@ -89,8 +94,8 @@ function Index() {
     };
 
     const formatPrice = (price) => {
-        if (!price && price !== 0) return '0₫';
-        return price.toLocaleString('vi-VN') + '₫';
+        if (!price && price !== 0) return '0đ';
+        return price.toLocaleString('vi-VN') + 'đ';
     };
 
     const calculateDiscount = (originalPrice, discountValue) => {
@@ -121,9 +126,96 @@ function Index() {
         };
     };
 
+    // Hàm random lấy phần tử từ mảng (không giới hạn theo id)
+    const getRandomItems = (arr, maxCount = 10) => {
+        if (!arr || arr.length === 0) return [];
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, Math.min(maxCount, shuffled.length));
+    };
+
+    // Hàm random lấy 2 mảng tours khác nhau, không trùng nhau
+    const getUniqueRandomTours = (allTours, count1 = 10, count2 = 10) => {
+        if (!allTours || allTours.length === 0) return [[], []];
+        
+        // Random toàn bộ mảng tours
+        const shuffled = [...allTours];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        // Lấy số lượng cần cho tour 1
+        const tours1 = shuffled.slice(0, Math.min(count1, shuffled.length));
+        
+        // Lấy phần còn lại cho tour 2 (không trùng)
+        const remaining = shuffled.slice(Math.min(count1, shuffled.length));
+        const tours2 = remaining.slice(0, Math.min(count2, remaining.length));
+        
+        return [tours1, tours2];
+    };
+
+    const showToast = (type, message) => {
+        setToastMsg({ type, message });
+        setTimeout(() => setToastMsg(null), 4000);
+    };
+
+    const handleTryNow = (plan) => {
+        setSelectedPlan(plan);
+        setForm({ name: '', email: '', phone: '', message: '' });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedPlan(null);
+    };
+
+    const handleSubmitInquiry = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const data = await submitPricingInquiry({
+                pricing_plan_id: selectedPlan.id,
+                ...form,
+            });
+            if (data.success) {
+                setShowModal(false);
+                showToast('success', data.message);
+            } else {
+                showToast('error', 'Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        } catch (error) {
+            showToast('error', 'Không thể kết nối server.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     useEffect(() => {
         fetchHomeData();
+        fetchPricingPlans();
     }, []);
+
+    // Cập nhật random data khi destinations hoặc tours thay đổi
+    useEffect(() => {
+        if (destinations.length > 0) {
+            // Random destinations lấy tối đa 7 cái, random hoàn toàn không theo id
+            setRandomDestinations(getRandomItems(destinations, 7));
+        }
+    }, [destinations]);
+
+    useEffect(() => {
+        if (tours.length > 0) {
+            // Random 2 mảng tours khác nhau, mỗi mảng tối đa 10 cái, không trùng nhau
+            const [featured, winter] = getUniqueRandomTours(tours, 10, 10);
+            setRandomFeaturedTours(featured);
+            setRandomWinterTours(winter);
+        }
+    }, [tours]);
 
     const fetchHomeData = async () => {
         try {
@@ -176,23 +268,19 @@ function Index() {
             }
         } catch (error) {
             toast.error("Không thể tải dữ liệu từ server!");
-            try {
-                const mockData = await import('../../data/Tour.json');
-                setTours(mockData.default.Tours || []);
-                setDestinations([
-                    { id: 1, name: "Đà Nẵng" },
-                    { id: 2, name: "Hà Nội" },
-                    { id: 3, name: "TP. Hồ Chí Minh" },
-                    { id: 4, name: "Phú Quốc" },
-                ]);
-                const destinationsMapData = { 1: "Đà Nẵng", 2: "Hà Nội", 3: "TP. Hồ Chí Minh", 4: "Phú Quốc" };
-                setDestinationsMap(destinationsMapData);
-                toast.info("Đang sử dụng dữ liệu mẫu");
-            } catch (fallbackError) {
-                // Silent fallback
-            }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPricingPlans = async () => {
+        try {
+            const data = await getPricingPlans();
+            if (data.success && data.data) {
+                setPlans(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching pricing plans:', error);
         }
     };
 
@@ -247,19 +335,114 @@ function Index() {
         { title: "Fishing & Swimming", img: Explore1, ExploreImg: ExploreImg1 },
     ];
 
-    const featuredTours = tours.filter(tour => tour.isFeatured === true || (tour.id >= 19 && tour.id <= 25));
-    const winterOffersTours = tours.filter(tour => tour.season === 'winter' || (tour.id >= 26 && tour.id <= 30));
-
     useLoginToast();
-
-
 
     return (
         <>
+            {toastMsg && (
+                <div style={{
+                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+                    padding: '14px 20px', borderRadius: '8px', color: '#fff',
+                    background: toastMsg.type === 'success' ? '#28a745' : '#dc3545',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                }}>
+                    <i className={`ri-${toastMsg.type === 'success' ? 'checkbox-circle' : 'error-warning'}-line me-2`}></i>
+                    {toastMsg.message}
+                </div>
+            )}
+
+            {showModal && selectedPlan && (
+                <div
+                    onClick={(e) => e.target === e.currentTarget && handleCloseModal()}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 9000,
+                        background: 'rgba(0,0,0,0.55)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '16px',
+                    }}
+                >
+                    <div style={{
+                        background: '#fff', borderRadius: '16px', padding: '32px',
+                        width: '100%', maxWidth: '480px',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                    }}>
+                        <div className="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h5 className="mb-1">
+                                    Đăng ký gói <strong>{selectedPlan.name}</strong>
+                                </h5>
+                                <small className="text-muted">
+                                    {selectedPlan.price
+                                        ? formatPrice(selectedPlan.price)
+                                        : 'Liên hệ để báo giá'}
+                                    {selectedPlan.price_note && ` — ${selectedPlan.price_note}`}
+                                </small>
+                            </div>
+                            <button onClick={handleCloseModal} style={{
+                                background: 'none', border: 'none',
+                                fontSize: '22px', cursor: 'pointer', color: '#888',
+                            }}>
+                                <i className="ri-close-line"></i>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmitInquiry}>
+                            <div className="mb-3">
+                                <label className="form-label">Họ và tên <span className="text-danger">*</span></label>
+                                <input
+                                    type="text" className="form-control"
+                                    placeholder="Nguyễn Văn A"
+                                    value={form.name}
+                                    onChange={e => setForm({ ...form, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">Email <span className="text-danger">*</span></label>
+                                <input
+                                    type="email" className="form-control"
+                                    placeholder="example@email.com"
+                                    value={form.email}
+                                    onChange={e => setForm({ ...form, email: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">Số điện thoại <span className="text-danger">*</span></label>
+                                <input
+                                    type="tel" className="form-control"
+                                    placeholder="0901 234 567"
+                                    value={form.phone}
+                                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="form-label">Tin nhắn thêm</label>
+                                <textarea
+                                    className="form-control" rows={3}
+                                    placeholder="Bạn có câu hỏi gì không?"
+                                    value={form.message}
+                                    onChange={e => setForm({ ...form, message: e.target.value })}
+                                />
+                            </div>
+                            <button
+                                type="submit" className="btn w-100" disabled={submitting}
+                                style={{ background: 'var(--primary-color)', color: '#fff' }}
+                            >
+                                {submitting
+                                    ? <><i className="ri-loader-4-line me-2"></i>Đang gửi...</>
+                                    : <><i className="ri-send-plane-line me-2"></i>Gửi đăng ký</>
+                                }
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <div>
                 <ToastContainer position="top-right" autoClose={2500} theme="dark" newestOnTop closeOnClick pauseOnHover />
-                
-                {/* Hero Section */}
+
                 <div className="hero-header section">
                     <video autoPlay muted loop playsInline className="hero-video">
                         <source src={bgvideo} type="video/mp4" />
@@ -374,7 +557,6 @@ function Index() {
                     </div>
                 </div>
 
-                {/* Banner */}
                 <div className="banner-container section">
                     <div className="container">
                         <div className="row text-center mb-5">
@@ -414,7 +596,7 @@ function Index() {
                     </div>
                 </div>
 
-                {/* Tours Section */}
+                {/* Tours Section 1 - Random Featured Tours (không trùng với Tour 2) */}
                 <div className="tours-container section">
                     <div className="container">
                         <div className="row text-center mb-5">
@@ -427,101 +609,107 @@ function Index() {
 
                     <div className="container">
                         <div className="row">
-                            <Swiper
-                                slidesPerView={4}
-                                spaceBetween={20}
-                                breakpoints={{
-                                    1399: { slidesPerView: 4 },
-                                    1199: { slidesPerView: 3 },
-                                    991: { slidesPerView: 2 },
-                                    767: { slidesPerView: 1.5 },
-                                    0: { slidesPerView: 1 },
-                                }}
-                                className="mt-4 swiper position-relative"
-                                loop={featuredTours.length >= 5}
-                            >
-                                {featuredTours.map(tour => (
-                                    <SwiperSlide key={tour.id}>
-                                        <div className="card h-100 tour-card shadow-sm position-relative">
-                                            <div className="position-relative">
-                                                <Link to={`/TourDetail/${tour.slug}`}>
-                                                    <img
-                                                        src={getTourImage(tour)}
-                                                        className="card-img-top rounded"
-                                                        alt={tour.title}
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = getImage('destination-1.png');
-                                                        }}
-                                                    />
-                                                </Link>
-                                                <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
-                                                    role="button"
-                                                    onClick={() => handleBookNow(tour)}
-                                                    style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
-                                                ></i>
-                                            </div>
-
-                                            <div className="card-body py-3">
-                                                <h5 className="card-title fw-semibold mb-1">{tour.title}</h5>
-                                                <p className="mb-3">
-                                                    <i className="ri-map-pin-line"></i>
-                                                    {getDestinationName(tour.destination_id)}
-                                                </p>
-
-                                                <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba( 248, 250 , 252 , .08)' }}>
-                                                    <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration_days || tour.duration} ngày</div>
-                                                    <div><i className="ri-user-line me-1"></i>{tour.max_people} người</div>
+                            {randomFeaturedTours.length > 0 ? (
+                                <Swiper
+                                    slidesPerView={4}
+                                    spaceBetween={20}
+                                    breakpoints={{
+                                        1399: { slidesPerView: 4 },
+                                        1199: { slidesPerView: 3 },
+                                        991: { slidesPerView: 2 },
+                                        767: { slidesPerView: 1.5 },
+                                        0: { slidesPerView: 1 },
+                                    }}
+                                    className="mt-4 swiper position-relative"
+                                    loop={randomFeaturedTours.length >= 5}
+                                >
+                                    {randomFeaturedTours.map(tour => (
+                                        <SwiperSlide key={tour.id}>
+                                            <div className="card h-100 tour-card shadow-sm position-relative">
+                                                <div className="position-relative">
+                                                    <Link to={`/TourDetail/${tour.slug}`}>
+                                                        <img
+                                                            src={getTourImage(tour)}
+                                                            className="card-img-top rounded"
+                                                            alt={tour.title}
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = getImage('destination-1.png');
+                                                            }}
+                                                        />
+                                                    </Link>
+                                                    <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
+                                                        role="button"
+                                                        onClick={() => handleBookNow(tour)}
+                                                        style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
+                                                    ></i>
                                                 </div>
 
-                                                <div className="d-flex mt-2 align-items-center justify-content-between">
-                                                    <div className="ms-1" style={{ color: '#8f94a3' }}>
-                                                        From
-                                                        <span className="text-warning fw-bold ms-1 fs-5">
-                                                            {formatPrice(tour.discount_price)}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                                <div className="card-body py-3">
+                                                    <h5 className="card-title fw-semibold mb-1">{tour.title}</h5>
+                                                    <p className="mb-3">
+                                                        <i className="ri-map-pin-line"></i>
+                                                        {getDestinationName(tour.destination_id)}
+                                                    </p>
 
-                                                {tour.discount_amount > 0 && (
-                                                    <div className="small mt-1 ms-1">
-                                                        <span className="text-muted text-decoration-line-through">
-                                                            {formatPrice(tour.price_adult)}
-                                                        </span>
-                                                        <span className="ms-2 text-danger">
-                                                            (- {formatPrice(tour.discount_amount)})
-                                                        </span>
+                                                    <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba( 248, 250 , 252 , .08)' }}>
+                                                        <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration_days || tour.duration} ngày</div>
+                                                        <div><i className="ri-user-line me-1"></i>{tour.max_people} người</div>
                                                     </div>
-                                                )}
 
-                                                <div className="small mt-2" style={{ color: '#8f94a3' }}>
-                                                    <i className="ri-user-star-line me-1"></i>
-                                                    Trẻ em: {formatPrice(tour.discount_price_child)}
-                                                    {tour.discount_amount_child > 0 && (
-                                                        <>
-                                                            <span className="text-muted text-decoration-line-through ms-1 small">
-                                                                {formatPrice(tour.price_child)}
+                                                    <div className="d-flex mt-2 align-items-center justify-content-between">
+                                                        <div className="ms-1" style={{ color: '#8f94a3' }}>
+                                                            From
+                                                            <span className="text-warning fw-bold ms-1 fs-5">
+                                                                {formatPrice(tour.discount_price)}
                                                             </span>
-                                                            <span className="ms-1 text-danger small">
-                                                                (-{tour.discount_percent_child}%)
+                                                        </div>
+                                                    </div>
+
+                                                    {tour.discount_amount > 0 && (
+                                                        <div className="small mt-1 ms-1">
+                                                            <span className="text-muted text-decoration-line-through">
+                                                                {formatPrice(tour.price_adult)}
                                                             </span>
-                                                        </>
+                                                            <span className="ms-2 text-danger">
+                                                                (- {formatPrice(tour.discount_amount)})
+                                                            </span>
+                                                        </div>
                                                     )}
-                                                </div>
 
-                                                <div className="d-flex align-items-center mt-2 ms-1">
-                                                    <div className="text-warning me-2">
-                                                        {"★".repeat(Math.floor(tour.rating || 4.5))}
-                                                        {(tour.rating || 4.5) % 1 !== 0 && "½"}
-                                                        {"☆".repeat(5 - Math.ceil(tour.rating || 4.5))}
+                                                    <div className="small mt-2" style={{ color: '#8f94a3' }}>
+                                                        <i className="ri-user-star-line me-1"></i>
+                                                        Trẻ em: {formatPrice(tour.discount_price_child)}
+                                                        {tour.discount_amount_child > 0 && (
+                                                            <>
+                                                                <span className="text-muted text-decoration-line-through ms-1 small">
+                                                                    {formatPrice(tour.price_child)}
+                                                                </span>
+                                                                <span className="ms-1 text-danger small">
+                                                                    (-{tour.discount_percent_child}%)
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    <span className="small text-muted">({tour.review || 0} đánh giá)</span>
+
+                                                    <div className="d-flex align-items-center mt-2 ms-1">
+                                                        <div className="text-warning me-2">
+                                                            {"★".repeat(Math.floor(tour.rating || 4.5))}
+                                                            {(tour.rating || 4.5) % 1 !== 0 && "½"}
+                                                            {"☆".repeat(5 - Math.ceil(tour.rating || 4.5))}
+                                                        </div>
+                                                        <span className="small text-muted">({tour.review || 0} đánh giá)</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                            ) : (
+                                <div className="text-center py-5">
+                                    <p>Đang tải dữ liệu tour...</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -569,279 +757,173 @@ function Index() {
                     </div>
                 </div>
 
-                {/* Tours 2 */}
+                {/* Tours Section 2 - Random Winter Tours (không trùng với Tour 1) */}
                 <div className="tours-container section tours-container-2 position-relative">
                     <div className="container">
                         <div className="row text-center mb-5">
                             <div className="section-title d-flex align-items-center flex-column">
-                                <p>Features Tours</p>
-                                <h2>Most Favorite Tour Place<br />in the world</h2>
+                                <p>Winter Offers</p>
+                                <h2>Special Winter Tour Deals<br />For You</h2>
                             </div>
                         </div>
                     </div>
 
                     <div className="container">
                         <div className="row">
-                            <Swiper
-                                slidesPerView={4}
-                                spaceBetween={20}
-                                breakpoints={{
-                                    1399: { slidesPerView: 4 },
-                                    1199: { slidesPerView: 3 },
-                                    991: { slidesPerView: 2 },
-                                    767: { slidesPerView: 1.5 },
-                                    0: { slidesPerView: 1 },
-                                }}
-                                className="mt-4 swiper position-relative"
-                                loop={winterOffersTours.length >= 5}
-                            >
-                                {winterOffersTours.map(tour => (
-                                    <SwiperSlide key={tour.id}>
-                                        <div className="card h-100 tour-card shadow-sm position-relative">
-                                            <div className="position-relative">
-                                                <Link to={`/TourDetail/${tour.slug}`}>
-                                                    <img src={getImage(tour.image)} className="card-img-top rounded" alt={tour.title} />
-                                                </Link>
-                                                <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
-                                                    role="button"
-                                                    onClick={() => handleBookNow(tour)}
-                                                    style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
-                                                ></i>
+                            {randomWinterTours.length > 0 ? (
+                                <Swiper
+                                    slidesPerView={4}
+                                    spaceBetween={20}
+                                    breakpoints={{
+                                        1399: { slidesPerView: 4 },
+                                        1199: { slidesPerView: 3 },
+                                        991: { slidesPerView: 2 },
+                                        767: { slidesPerView: 1.5 },
+                                        0: { slidesPerView: 1 },
+                                    }}
+                                    className="mt-4 swiper position-relative"
+                                    loop={randomWinterTours.length >= 5}
+                                >
+                                    {randomWinterTours.map(tour => (
+                                        <SwiperSlide key={tour.id}>
+                                            <div className="card h-100 tour-card shadow-sm position-relative">
+                                                <div className="position-relative">
+                                                    <Link to={`/TourDetail/${tour.slug}`}>
+                                                        <img src={getTourImage(tour)} className="card-img-top rounded" alt={tour.title} />
+                                                    </Link>
+                                                    <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
+                                                        role="button"
+                                                        onClick={() => handleBookNow(tour)}
+                                                        style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
+                                                    ></i>
+                                                </div>
+
+                                                <div className="card-body py-3">
+                                                    <h5 className="card-title fw-semibold mb-1">{tour.title}</h5>
+                                                    <p className="mb-3"><i className="ri-map-pin-line"></i> {getDestinationName(tour.destination_id)}</p>
+                                                    <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba( 248, 250 , 252 , .08)' }}>
+                                                        <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration_days || tour.duration} ngày</div>
+                                                        <div><i className="ri-user-line me-1"></i>{tour.max_people} người</div>
+                                                    </div>
+
+                                                    <div className="d-flex mt-2 align-items-center justify-content-between">
+                                                        <div className="ms-1" style={{ color: '#8f94a3' }}>
+                                                            From
+                                                            <span className="text-warning fw-bold ms-1 fs-5">
+                                                                {formatPrice(tour.discount_price)}
+                                                            </span>
+                                                        </div>
+                                                        {tour.discount_percent > 0 && (
+                                                            <span className="badge bg-danger rounded-pill me-1">
+                                                                -{tour.discount_percent}%
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {tour.discount_amount > 0 && (
+                                                        <div className="small mt-1 ms-1">
+                                                            <span className="text-muted text-decoration-line-through">
+                                                                {formatPrice(tour.price_adult)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="small mt-2" style={{ color: '#8f94a3' }}>
+                                                        <i className="ri-user-star-line me-1"></i>
+                                                        Trẻ em: {formatPrice(tour.discount_price_child)}
+                                                        {tour.discount_amount_child > 0 && (
+                                                            <span className="text-muted text-decoration-line-through ms-1 small">
+                                                                {formatPrice(tour.price_child)}
+                                                            </span>
+                                                        )}
+                                                        {tour.discount_percent_child > 0 && (
+                                                            <span className="ms-1 text-danger small">(-{tour.discount_percent_child}%)</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="d-flex align-items-center mt-2 ms-1">
+                                                        <div className="text-warning me-2">
+                                                            {"★".repeat(Math.floor(tour.rating || 4.5))}
+                                                            {(tour.rating || 4.5) % 1 !== 0 && "½"}
+                                                            {"☆".repeat(5 - Math.ceil(tour.rating || 4.5))}
+                                                        </div>
+                                                        <span className="small text-muted">({tour.review || 0} đánh giá)</span>
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                            <div className="card-body py-3">
-                                                <h5 className="card-title fw-semibold mb-1">{tour.title}</h5>
-                                                <p className="mb-3"><i className="ri-map-pin-line"></i> {tour.location}</p>
-                                                <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba( 248, 250 , 252 , .08)' }}>
-                                                    <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration}</div>
-                                                    <div><i className="ri-user-line me-1"></i>{tour.max_people} người</div>
-                                                </div>
-
-                                                <div className="d-flex mt-2 align-items-center justify-content-between">
-                                                    <div className="ms-1" style={{ color: '#8f94a3' }}>
-                                                        From
-                                                        <span className="text-warning fw-bold ms-1 fs-5">
-                                                            {tour.discount_price?.toLocaleString('vi-VN')}₫
-                                                        </span>
-                                                    </div>
-                                                    {tour.price_discount_percent > 0 && (
-                                                        <span className="badge bg-danger rounded-pill me-1">
-                                                            -{tour.price_discount_percent}%
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {tour.price_discount_percent > 0 && (
-                                                    <div className="small mt-1 ms-1">
-                                                        <span className="text-muted text-decoration-line-through">
-                                                            {tour.price_adult?.toLocaleString('vi-VN')}₫
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                <div className="small mt-2" style={{ color: '#8f94a3' }}>
-                                                    <i className="ri-user-star-line me-1"></i>
-                                                    Trẻ em: {tour.discount_price_child?.toLocaleString('vi-VN')}₫
-                                                    {tour.price_child_discount_percent > 0 && (
-                                                        <span className="text-muted text-decoration-line-through ms-1 small">
-                                                            {tour.price_child?.toLocaleString('vi-VN')}₫
-                                                        </span>
-                                                    )}
-                                                    {tour.price_child_discount_percent > 0 && (
-                                                        <span className="ms-1 text-danger small">(-{tour.price_child_discount_percent}%)</span>
-                                                    )}
-                                                </div>
-
-                                                <div className="d-flex align-items-center mt-2 ms-1">
-                                                    <div className="text-warning me-2">
-                                                        {"★".repeat(Math.floor(tour.rating))}
-                                                        {tour.rating % 1 !== 0 && "½"}
-                                                        {"☆".repeat(5 - Math.ceil(tour.rating))}
-                                                    </div>
-                                                    <span className="small text-muted">({tour.review} đánh giá)</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                            ) : (
+                                <div className="text-center py-5">
+                                    <p>Đang tải dữ liệu tour...</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Destination */}
-                <div className="destination-container section">
-                    <div className="container">
-                        <div className="row text-center mb-5">
-                            <div className="section-title">
-                                <p>Destination List</p>
-                                <h2>Explore The Beautiful <br /> Places Around World</h2>
-                            </div>
-                        </div>
-                    </div>
+                {/* Destination - Random Destinations (tối đa 7 cái, random hoàn toàn) */}
+<div className="destination-container section">
+    <div className="container">
+        <div className="row text-center mb-5">
+            <div className="section-title">
+                <p>Destination List</p>
+                <h2>Explore The Beautiful <br /> Places Around World</h2>
+            </div>
+        </div>
+    </div>
 
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
-                                <div className="destination-item w-100 rounded-3 text-white">
-                                    <img src={destination1} alt="destination-image" />
-                                    <div className="rating-badge">
-                                        <i className="ri-star-s-fill"></i>
-                                        4.5
-                                    </div>
-                                    <div className="destination-info p-4 w-100">
-                                        <div className="destination-name">
-                                            <p className="pera m-0 fs-2 fw-bold">Spain</p>
-                                            <div className="location d-flex gap-2">
-                                                <i className="ri-map-pin-line"></i>
-                                                <p className="name m-0">Malaga View</p>
-                                            </div>
-                                        </div>
-                                        <div className="arrow-btn">
-                                            <i className="ri-arrow-right-line fs-4"></i>
-                                        </div>
-                                    </div>
+    <div className="container">
+        {/* 3 destination lớn ở hàng đầu */}
+        <div className="row">
+            {randomDestinations.slice(0, 3).map(dest => (
+                <div key={dest.id} className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
+                    <div className="destination-item w-100 rounded-3 text-white">
+                        <img src={dest.image} alt={dest.name} />
+                        <div className="destination-info p-4 w-100">
+                            <div className="destination-name">
+                                <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
+                                <div className="location d-flex gap-2">
+                                    <i className="ri-map-pin-line"></i>
+                                    <p className="name m-0">{dest.name}</p>
                                 </div>
                             </div>
-
-                            <div className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
-                                <div className="destination-item w-100 rounded-3 text-white">
-                                    <img src={destination2} alt="destination-image" />
-                                    <div className="rating-badge">
-                                        <i className="ri-star-s-fill"></i>
-                                        4.5
-                                    </div>
-                                    <div className="destination-info p-4 w-100">
-                                        <div className="destination-name">
-                                            <p className="pera m-0 fs-2 fw-bold">Spain</p>
-                                            <div className="location d-flex gap-2">
-                                                <i className="ri-map-pin-line"></i>
-                                                <p className="name m-0">Malaga View</p>
-                                            </div>
-                                        </div>
-                                        <div className="arrow-btn">
-                                            <i className="ri-arrow-right-line fs-4"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
-                                <div className="destination-item w-100 rounded-3 text-white">
-                                    <img src={destination3} alt="destination-image" />
-                                    <div className="rating-badge">
-                                        <i className="ri-star-s-fill"></i>
-                                        4.5
-                                    </div>
-                                    <div className="destination-info p-4 w-100">
-                                        <div className="destination-name">
-                                            <p className="pera m-0 fs-2 fw-bold">Spain</p>
-                                            <div className="location d-flex gap-2">
-                                                <i className="ri-map-pin-line"></i>
-                                                <p className="name m-0">Malaga View</p>
-                                            </div>
-                                        </div>
-                                        <div className="arrow-btn">
-                                            <i className="ri-arrow-right-line fs-4"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="destination-gallery">
-                                <div className="row mt-4">
-                                    <div className="col-lg-3 col-md-6 col-sm-6 mb-4">
-                                        <div className="destination-item rounded-3 text-white">
-                                            <img src={destination4} alt="destination-image" />
-                                            <div className="rating-badge">
-                                                <i className="ri-star-s-fill"></i>
-                                                4.5
-                                            </div>
-                                            <div className="destination-info p-4 w-100">
-                                                <div className="destination-name">
-                                                    <p className="pera m-0 fs-2 fw-bold">Switzerland</p>
-                                                    <div className="location d-flex gap-2">
-                                                        <i className="ri-map-pin-line"></i>
-                                                        <p className="name m-0">Zurich View</p>
-                                                    </div>
-                                                </div>
-                                                <div className="arrow-btn">
-                                                    <i className="ri-arrow-right-line fs-4"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-6 col-sm-6 mb-4">
-                                        <div className="destination-item rounded-3 text-white">
-                                            <img src={destination5} alt="destination-image" />
-                                            <div className="rating-badge">
-                                                <i className="ri-star-s-fill"></i>
-                                                4.5
-                                            </div>
-                                            <div className="destination-info p-4 w-100">
-                                                <div className="destination-name">
-                                                    <p className="pera m-0 fs-2 fw-bold">Australia</p>
-                                                    <div className="location d-flex gap-2">
-                                                        <i className="ri-map-pin-line"></i>
-                                                        <p className="name m-0">Zurich View</p>
-                                                    </div>
-                                                </div>
-                                                <div className="arrow-btn">
-                                                    <i className="ri-arrow-right-line fs-4"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-6 col-sm-6 mb-4">
-                                        <div className="destination-item rounded-3 text-white">
-                                            <img src={destination6} alt="destination-image" />
-                                            <div className="rating-badge">
-                                                <i className="ri-star-s-fill"></i>
-                                                4.5
-                                            </div>
-                                            <div className="destination-info p-4 w-100">
-                                                <div className="destination-name">
-                                                    <p className="pera m-0 fs-2 fw-bold">Canada</p>
-                                                    <div className="location d-flex gap-2">
-                                                        <i className="ri-map-pin-line"></i>
-                                                        <p className="name m-0">Toronto View</p>
-                                                    </div>
-                                                </div>
-                                                <div className="arrow-btn">
-                                                    <i className="ri-arrow-right-line fs-4"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-lg-3 col-md-6 col-sm-6 mb-4">
-                                        <div className="destination-item rounded-3 text-white">
-                                            <img src={destination7} alt="destination-image" />
-                                            <div className="rating-badge">
-                                                <i className="ri-star-s-fill"></i>
-                                                4.5
-                                            </div>
-                                            <div className="destination-info p-4 w-100">
-                                                <div className="destination-name">
-                                                    <p className="pera m-0 fs-2 fw-bold">Canada</p>
-                                                    <div className="location d-flex gap-2">
-                                                        <i className="ri-map-pin-line"></i>
-                                                        <p className="name m-0">Toronto View</p>
-                                                    </div>
-                                                </div>
-                                                <div className="arrow-btn">
-                                                    <i className="ri-arrow-right-line fs-4"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="arrow-btn">
+                                <i className="ri-arrow-right-line fs-4"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+            ))}
+        </div>
+
+        {/* 4 destination nhỏ ở hàng dưới */}
+        <div className="destination-gallery">
+            <div className="row mt-4">
+                {randomDestinations.slice(3, 7).map(dest => (
+                    <div key={dest.id} className="col-lg-3 col-md-6 col-sm-6 mb-4">
+                        <div className="destination-item rounded-3 text-white">
+                            <img src={dest.image} alt={dest.name} />
+                            <div className="destination-info p-4 w-100">
+                                <div className="destination-name">
+                                    <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
+                                    <div className="location d-flex gap-2">
+                                        <i className="ri-map-pin-line"></i>
+                                        <p className="name m-0">{dest.name}</p>
+                                    </div>
+                                </div>
+                                <div className="arrow-btn">
+                                    <i className="ri-arrow-right-line fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+</div>
 
                 {/* Explore */}
                 <div className="explore-section section">
@@ -1019,102 +1101,67 @@ function Index() {
                         <div className="row text-center mb-5">
                             <div className="section-title">
                                 <p>New & Article</p>
-                                <h2>Lastest New & Article From the <br />Blog Posts</h2>
+                                <h2>Latest News & Articles From the <br />Blog Posts</h2>
                             </div>
                         </div>
                     </div>
 
                     <div className="container">
-                        <div className="row g-4">
-                            {blogs.length > 0 ? blogs.map((blog, index) => (
-                                <div className="col-lg-4" key={index}>
-                                    <div className="blog-card">
-                                        <div className="blog-img">
-                                            <img src={blog.image || news4} alt="" className="card-img-top rounded-3" />
-                                        </div>
-                                        <div className="blog-card-body">
-                                            <h6 className="mb-2">{blog.category}</h6>
-                                            <h5 className="card-title text-white">{blog.title}</h5>
-                                            <div className="d-flex justify-content-between align-items-center mt-4">
-                                                <div className="authors d-flex">
-                                                    {blog.authors?.map((author, idx) => (
-                                                        <img key={idx} src={author.image || user1} alt="user-image" />
-                                                    ))}
-                                                </div>
-                                                <span>{blog.readTime} Min Read</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )) : (
-                                <>
-                                    <div className="col-lg-4">
-                                        <div className="blog-card">
+                        <div className="row">
+                            <Swiper
+                                slidesPerView={3}
+                                spaceBetween={24}
+                                breakpoints={{
+                                    1399: { slidesPerView: 3 },
+                                    1199: { slidesPerView: 3 },
+                                    991: { slidesPerView: 2 },
+                                    767: { slidesPerView: 1.5 },
+                                    0: { slidesPerView: 1 },
+                                }}
+                                className="blog-swiper"
+                                loop={blogs.slice(0, 9).length >= 4}
+                                navigation={true}
+                                pagination={{ clickable: true }}
+                            >
+                                {blogs.slice(0, 9).map((blog) => (
+                                    <SwiperSlide key={blog.id}>
+                                        <div className="blog-card h-100">
                                             <div className="blog-img">
-                                                <img src={news4} alt="" className="card-img-top rounded-3" />
+                                                <img
+                                                    src={blog.thumbnail || news4}
+                                                    alt={blog.title}
+                                                    className="card-img-top rounded-3 w-100"
+                                                    style={{ height: '240px', objectFit: 'cover' }}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = news4;
+                                                    }}
+                                                />
                                             </div>
-                                            <div className="blog-card-body">
-                                                <h6 className="mb-2">Tour Guide</h6>
-                                                <h5 className="card-title text-white">The World is a Book and Those Who do not Travel Read Only One Page.</h5>
-                                                <div className="d-flex justify-content-between align-items-center mt-4">
-                                                    <div className="authors d-flex">
-                                                        <img src={user1} alt="user-image" />
-                                                        <img src={user2} alt="user-image" />
-                                                        <img src={user3} alt="user-image" />
-                                                        <img src={user4} alt="user-image" />
+                                            <div className="blog-card-body d-flex flex-column">
+                                                <h6 className="mb-2">{blog.category || 'Uncategorized'}</h6>
+                                                <h5 className="card-title text-white mb-4">{blog.title}</h5>
+                                                <div className="d-flex justify-content-between align-items-center mt-auto pt-3">
+                                                    <div className="authors d-flex align-items-center gap-2">
+                                                        <img
+                                                            src={blog.author_avatar || user1}
+                                                            alt={blog.author}
+                                                            style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                                                        />
+                                                        <span className="author-name">{blog.author || 'Admin'}</span>
                                                     </div>
-                                                    <span>10 Min Read</span>
+                                                    <span className="read-time">{blog.read_time || '5'} Min Read</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="col-lg-4">
-                                        <div className="blog-card">
-                                            <div className="blog-img">
-                                                <img src={news5} alt="" className="card-img-top rounded-3" />
-                                            </div>
-                                            <div className="blog-card-body">
-                                                <h6 className="mb-2">Tour Guide</h6>
-                                                <h5 className="card-title text-white">The World is a Book and Those Who do not Travel Read Only One Page.</h5>
-                                                <div className="d-flex justify-content-between align-items-center mt-4">
-                                                    <div className="authors d-flex">
-                                                        <img src={user1} alt="user-image" />
-                                                        <img src={user2} alt="user-image" />
-                                                        <img src={user3} alt="user-image" />
-                                                        <img src={user4} alt="user-image" />
-                                                    </div>
-                                                    <span>10 Min Read</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-4">
-                                        <div className="blog-card">
-                                            <div className="blog-img">
-                                                <img src={news6} alt="" className="card-img-top rounded-3" />
-                                            </div>
-                                            <div className="blog-card-body">
-                                                <h6 className="mb-2">Tour Guide</h6>
-                                                <h5 className="card-title text-white">The World is a Book and Those Who do not Travel Read Only One Page.</h5>
-                                                <div className="d-flex justify-content-between align-items-center mt-4">
-                                                    <div className="authors d-flex">
-                                                        <img src={user1} alt="user-image" />
-                                                        <img src={user2} alt="user-image" />
-                                                        <img src={user3} alt="user-image" />
-                                                        <img src={user4} alt="user-image" />
-                                                    </div>
-                                                    <span>10 Min Read</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
                         </div>
                     </div>
                 </div>
 
-                {/* Price */}
+                {/* Price Section */}
                 <div className="price-section section">
                     <div className="container">
                         <div className="section-title mb-5">
@@ -1125,62 +1172,47 @@ function Index() {
                         </div>
 
                         <div className="row g-4">
-                            <div className="col-lg-4">
-                                <div className="pricing-card">
-                                    <h5>Basic</h5>
-                                    <p className="mb-3">Best for personal and basic needs</p>
-                                    <div className="pricing-content d-flex align-items-center gap-3 border-top">
-                                        <h2>10.000.000đ</h2>
-                                        <span>One-time payment</span>
-                                    </div>
-                                    <ul className="list-unstyled mt-4">
-                                        <li className="mb-4"><i className="ri-check-line"></i> 20+ Partners</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Mass Messaging</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Lorem, ipsum dolor sit amet</li>
-                                        <li className="mb-4 disabled-li"><i className="ri-check-line"></i> Online Booking engine</li>
-                                        <li className="mb-4 disabled-li"><i className="ri-check-line"></i> Business Card Scanner</li>
-                                    </ul>
-                                    <button className="btn text-white">Try Now <i className="ri-arrow-right-up-line"></i></button>
-                                    <p className="text-white mt-3">Per month +2% online Booking</p>
-                                </div>
-                            </div>
+                            {plans.map(plan => (
+                                <div className="col-lg-4" key={plan.id}>
+                                    <div className="pricing-card">
+                                        <h5>
+                                            {plan.name}
+                                            {plan.is_popular && (
+                                                <span className="popular-tag text-white ms-2">popular</span>
+                                            )}
+                                        </h5>
+                                        <p className="mb-3">{plan.description}</p>
 
-                            <div className="col-lg-4">
-                                <div className="pricing-card">
-                                    <h5>Pro <span className="popular-tag text-white">popular</span></h5>
-                                    <p className="mb-3">Best for personal and basic needs</p>
-                                    <div className="pricing-content d-flex align-items-center gap-3 border-top">
-                                        <h2>30.000.000đ</h2>
-                                        <span>One-time payment</span>
-                                    </div>
-                                    <ul className="list-unstyled mt-4">
-                                        <li className="mb-4"><i className="ri-check-line"></i> 20+ Partners</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Mass Messaging</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Lorem, ipsum dolor sit amet</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Online Booking engine</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Business Card Scanner</li>
-                                    </ul>
-                                    <button className="btn text-white">Try Now <i className="ri-arrow-right-up-line"></i></button>
-                                    <p className="text-white mt-3">Per month +2% online Booking</p>
-                                </div>
-                            </div>
+                                        {plan.price && (
+                                            <div className="pricing-content d-flex align-items-center gap-3 border-top">
+                                                <h2>{formatPrice(Number(plan.price))}</h2>
+                                                <span>{plan.price_note}</span>
+                                            </div>
+                                        )}
 
-                            <div className="col-lg-4">
-                                <div className="pricing-card">
-                                    <h5>Custom</h5>
-                                    <p className="mb-3">Best for personal and basic needs</p>
-                                    <ul className="list-unstyled mt-4">
-                                        <li className="mb-4"><i className="ri-check-line"></i> Mass Messaging</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Unlimited Everything</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Lorem, ipsum dolor sit</li>
-                                        <li className="mb-4"><i className="ri-check-line"></i> Lorem, ipsum dolor</li>
-                                        <li className="mb-4 disabled-li"><i className="ri-check-line"></i> Online Booking engine</li>
-                                        <li className="mb-4 disabled-li"><i className="ri-check-line"></i> Business Card Scanner</li>
-                                    </ul>
-                                    <button className="btn text-white">Contact <i className="ri-arrow-right-up-line"></i></button>
-                                    <p className="text-white mt-3">Please contact anytime</p>
+                                        <ul className="list-unstyled mt-4">
+                                            {(plan.features ?? []).map((feature, idx) => (
+                                                <li className="mb-4" key={`feature-${idx}`}>
+                                                    <i className="ri-check-line"></i> {feature}
+                                                </li>
+                                            ))}
+                                            {(plan.disabled_features ?? []).map((feature, idx) => (
+                                                <li className="mb-4 disabled-li" key={`disabled-${idx}`}>
+                                                    <i className="ri-check-line"></i> {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+
+                                        <button
+                                            className="btn text-white"
+                                            onClick={() => handleTryNow(plan)}
+                                        >
+                                            {plan.button_text || 'Try Now'} <i className="ri-arrow-right-up-line"></i>
+                                        </button>
+                                        <p className="text-white mt-3">{plan.price_note || 'Liên hệ để biết thêm chi tiết'}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>

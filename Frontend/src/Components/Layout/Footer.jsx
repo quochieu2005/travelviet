@@ -9,8 +9,8 @@ function Footer() {
                         <div className="col-lg-3 col-md-6">
                             <h4 className="mb-3">Company</h4>
                             <ul className="list-unstyled">
-                                <li><a href="#" className='footer-link'><i className="ri-arrow-right-s-line"></i>About Us</a></li>
-                                <li><a href="#" className='footer-link'><i className="ri-arrow-right-s-line"></i>News</a></li>
+                                <li><a href="/About" className='footer-link'><i className="ri-arrow-right-s-line"></i>About Us</a></li>
+                                <li><a href="/Blog" className='footer-link'><i className="ri-arrow-right-s-line"></i>News</a></li>
                                 <li><a href="#" className='footer-link'><i className="ri-arrow-right-s-line"></i>FAQ</a></li>
                                 <li><a href="/Contact" className='footer-link'><i className="ri-arrow-right-s-line"></i>Contact</a></li>
                             </ul>
@@ -29,7 +29,7 @@ function Footer() {
                             <h4 className="mb-3">Quick Links</h4>
                             <ul className="list-unstyled">
                                 <li><a href="/" className='footer-link'><i className="ri-home-4-line"></i>Home</a></li>
-                                <li><a href="#" className='footer-link'><i className="ri-information-line">About Us</i></a></li>
+                                <li><a href="/About" className='footer-link'><i className="ri-information-line">About Us</i></a></li>
                                 <li><a href="/Contact" className='footer-link'><i className="ri-phone-line"></i>Contact Us</a></li>
                             </ul>
                         </div>
