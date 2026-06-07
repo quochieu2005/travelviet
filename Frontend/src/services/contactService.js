@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://api.travelviet.duckdns.org/api';
 
 export const sendContact = async (data) => {
     const token = localStorage.getItem("token");
