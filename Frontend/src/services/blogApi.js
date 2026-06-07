@@ -1,5 +1,5 @@
 // src/services/blogApi.js
-const API_URL = "https://api.travelviet.duckdns.org/api";
+const API_URL = "http://localhost:8000/api";
 
 class BlogApiService {
     constructor() {

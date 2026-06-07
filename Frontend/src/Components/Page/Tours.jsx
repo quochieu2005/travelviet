@@ -1,31 +1,32 @@
 import { useEffect, useState, useContext } from 'react'
-
 import { CartContext } from '../../context/CartContext'
-import tourData from '../../data/Tour.json'
+import { getTours } from '../../services/tourApi'
 import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 function Tours() {
-
     const [tours, setTours] = useState([]);
+    const [destinationsMap, setDestinationsMap] = useState({});
     const [visibleCount, setVisibleCount] = useState(6);
+    const [loading, setLoading] = useState(true);
     const { cartItems, addTOCart } = useContext(CartContext);
-    const imageModules = import.meta.glob('../../assets/*.{png,jpg,jpeg}', { eager: true });
-
-
-    const getImage = (imagePath) => {
-        const fileName = imagePath.split('/').pop();
-        return imageModules[`../../assets/${fileName}`]?.default || '';
-    };
 
     useEffect(() => {
-        setTours(tourData.Tours);
+        getTours()
+            .then((res) => {
+                setTours(res.data.Tours || []);
+                setDestinationsMap(res.data.destinations || {});
+            })
+            .catch((err) => {
+                console.error('Lỗi tải tour:', err);
+                toast.error('Không thể tải danh sách tour!');
+            })
+            .finally(() => setLoading(false));
     }, []);
 
     const handleBookNow = (tour) => {
         const alreadyInCart = cartItems.find((item) => item.id === tour.id);
-
         if (alreadyInCart) {
             toast.warning("Tour đã có trong giỏ hàng!");
         } else {
@@ -38,9 +39,12 @@ function Tours() {
         setVisibleCount((prev) => prev + 6);
     }
 
+    const getDestinationName = (destinationId) => {
+        return destinationsMap[destinationId] || 'Đang cập nhật';
+    };
+
     return (
         <>
-
             <div className="main-wrapper">
                 <ToastContainer position='top-right' autoClose={2500} theme='dark' />
 
@@ -57,11 +61,9 @@ function Tours() {
                                     <legend><i className="ri-map-pin-line me-2"></i>Destination</legend>
                                     <select className='form-select'>
                                         <option value="">Select Destination</option>
-                                        <option>USA</option>
-                                        <option>Turkey</option>
-                                        <option>Switerland</option>
-                                        <option>ThaiLand</option>
-                                        <option>VietNam</option>
+                                        {Object.entries(destinationsMap).map(([id, name]) => (
+                                            <option key={id} value={id}>{name}</option>
+                                        ))}
                                     </select>
                                 </fieldset>
 
@@ -99,12 +101,10 @@ function Tours() {
 
                                 <fieldset className='filter-section'>
                                     <legend><i className="ri-price-tag-3-line me-2"></i>Special Offers</legend>
-
                                     <div className="form-check">
                                         <input type="checkbox" id='likely' className="form-check-input" />
                                         <label htmlFor="likely" className='form-check-label'>Likely to Sell Out</label>
                                     </div>
-
                                     <div className="form-check">
                                         <input type="checkbox" id='discount' className="form-check-input" />
                                         <label htmlFor="discount" className='form-check-label'>Winter Discount</label>
@@ -120,7 +120,6 @@ function Tours() {
                                         </div>
                                     ))}
                                 </fieldset>
-
                             </div>
                         </div>
 
@@ -131,7 +130,12 @@ function Tours() {
                                         <div className="card h-100 tour-card shadow-sm position-relative">
                                             <div className="position-relative">
                                                 <Link to={`/TourDetail/${tour.slug}`}>
-                                                    <img src={getImage(tour.image)} className="card-img-top rounded" alt={tour.title} />
+                                                    <img
+                                                        src={tour.thumbnail}
+                                                        className="card-img-top rounded"
+                                                        alt={tour.title}
+                                                        onError={(e) => { e.target.src = '/placeholder.jpg' }}
+                                                    />
                                                 </Link>
                                                 <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
                                                     role="button"
@@ -142,44 +146,57 @@ function Tours() {
 
                                             <div className="card-body py-3">
                                                 <h5 className="card-title fw-semibold mb-1">{tour.title}</h5>
-                                                <p className="mb-3"><i className="ri-map-pin-line"></i> {tour.location}</p>
-                                                <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba( 248, 250 , 252 , .08)' }}>
-                                                    <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration}</div>
+                                                <p className="mb-3">
+                                                    <i className="ri-map-pin-line me-1"></i>
+                                                    {getDestinationName(tour.destination_id)}
+                                                </p>
+                                                <div className="d-flex flex-wrap justify-content-between small mb-3 p-2 rounded" style={{ backgroundColor: 'rgba(248,250,252,.08)' }}>
+                                                    <div className="me-3"><i className="ri-time-line me-1"></i>{tour.duration_days} ngày</div>
                                                     <div><i className="ri-user-line me-1"></i>{tour.max_people} người</div>
                                                 </div>
 
+                                                {/* Giá discount */}
                                                 <div className="d-flex mt-2 align-items-center justify-content-between">
                                                     <div className="ms-1" style={{ color: '#8f94a3' }}>
                                                         From
                                                         <span className="text-warning fw-bold ms-1 fs-5">
-                                                            {tour['discount price'].toLocaleString('vi-VN')}₫
+                                                            {Number(tour.discount_price).toLocaleString('vi-VN')}₫
                                                         </span>
                                                     </div>
-                                                    {tour['price discount percent'] > 0 && (
+                                                    {tour.price_discount_percent > 0 && (
                                                         <span className="badge bg-danger rounded-pill me-1">
-                                                            -{tour['price discount percent']}%
+                                                            {tour.price_discount_percent >= 100
+                                                                ? `-${Number(tour.price_discount_percent).toLocaleString('vi-VN')}₫`
+                                                                : `-${tour.price_discount_percent}%`
+                                                            }
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                {tour['price discount percent'] > 0 && (
+                                                {tour.price_discount_percent > 0 && (
                                                     <div className="small mt-1 ms-1">
                                                         <span className="text-muted text-decoration-line-through">
-                                                            {tour['price adult'].toLocaleString('vi-VN')}₫
+                                                            {Number(tour.price_adult).toLocaleString('vi-VN')}₫
                                                         </span>
                                                     </div>
                                                 )}
 
+                                                {/* Giá trẻ em */}
                                                 <div className="small mt-2" style={{ color: '#8f94a3' }}>
                                                     <i className="ri-user-star-line me-1"></i>
-                                                    Trẻ em: {tour['discount price child'].toLocaleString('vi-VN')}₫
-                                                    {tour['price child discount percent'] > 0 && (
-                                                        <span className="text-muted text-decoration-line-through ms-1 small">
-                                                            {tour['price child'].toLocaleString('vi-VN')}₫
-                                                        </span>
-                                                    )}
-                                                    {tour['price child discount percent'] > 0 && (
-                                                        <span className="ms-1 text-danger small">(-{tour['price child discount percent']}%)</span>
+                                                    Trẻ em: {Number(tour.discount_price_child).toLocaleString('vi-VN')}₫
+                                                    {tour.price_child_discount_percent > 0 && (
+                                                        <>
+                                                            <span className="text-muted text-decoration-line-through ms-1 small">
+                                                                {Number(tour.price_child).toLocaleString('vi-VN')}₫
+                                                            </span>
+                                                            <span className="ms-1 text-danger small">
+                                                                {tour.price_child_discount_percent >= 100
+                                                                    ? `(-${Number(tour.price_child_discount_percent).toLocaleString('vi-VN')}₫)`
+                                                                    : `(-${tour.price_child_discount_percent}%)`
+                                                                }
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </div>
 
@@ -198,18 +215,16 @@ function Tours() {
                             </div>
                         </div>
 
-                        {visibleCount < tours.length && (
+                        {!loading && visibleCount < tours.length && (
                             <div className="text-center mb-4">
                                 <button className="btn btn-primary px-4 py-2" onClick={loadMore}>
                                     Load More
                                 </button>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
-
         </>
     )
 }

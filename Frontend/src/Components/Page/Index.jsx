@@ -864,66 +864,64 @@ function Index() {
                 </div>
 
                 {/* Destination - Random Destinations (tối đa 7 cái, random hoàn toàn) */}
-<div className="destination-container section">
-    <div className="container">
-        <div className="row text-center mb-5">
-            <div className="section-title">
-                <p>Destination List</p>
-                <h2>Explore The Beautiful <br /> Places Around World</h2>
-            </div>
-        </div>
-    </div>
-
-    <div className="container">
-        {/* 3 destination lớn ở hàng đầu */}
-        <div className="row">
-            {randomDestinations.slice(0, 3).map(dest => (
-                <div key={dest.id} className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
-                    <div className="destination-item w-100 rounded-3 text-white">
-                        <img src={dest.image} alt={dest.name} />
-                        <div className="destination-info p-4 w-100">
-                            <div className="destination-name">
-                                <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
-                                <div className="location d-flex gap-2">
-                                    <i className="ri-map-pin-line"></i>
-                                    <p className="name m-0">{dest.name}</p>
-                                </div>
+                <div className="destination-container section">
+                    <div className="container">
+                        <div className="row text-center mb-5">
+                            <div className="section-title">
+                                <p>Destination List</p>
+                                <h2>Explore The Beautiful <br /> Places Around World</h2>
                             </div>
-                            <div className="arrow-btn">
-                                <i className="ri-arrow-right-line fs-4"></i>
+                        </div>
+                    </div>
+
+                    <div className="container">
+                        <div className="row">
+                            {randomDestinations.slice(0, 3).map(dest => (
+                                <div key={dest.id} className="col-xl-4 col-lg-7 col-md-7 mb-4 mb-lg-2">
+                                    <div className="destination-item w-100 rounded-3 text-white">
+                                        <img src={dest.image} alt={dest.name} />
+                                        <div className="destination-info p-4 w-100">
+                                            <div className="destination-name">
+                                                <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
+                                                <div className="location d-flex gap-2">
+                                                    <i className="ri-map-pin-line"></i>
+                                                    <p className="name m-0">{dest.name}</p>
+                                                </div>
+                                            </div>
+                                            <div className="arrow-btn">
+                                                <i className="ri-arrow-right-line fs-4"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="destination-gallery">
+                            <div className="row mt-4">
+                                {randomDestinations.slice(3, 7).map(dest => (
+                                    <div key={dest.id} className="col-lg-3 col-md-6 col-sm-6 mb-4">
+                                        <div className="destination-item rounded-3 text-white">
+                                            <img src={dest.image} alt={dest.name} />
+                                            <div className="destination-info p-4 w-100">
+                                                <div className="destination-name">
+                                                    <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
+                                                    <div className="location d-flex gap-2">
+                                                        <i className="ri-map-pin-line"></i>
+                                                        <p className="name m-0">{dest.name}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="arrow-btn">
+                                                    <i className="ri-arrow-right-line fs-4"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
-            ))}
-        </div>
-
-        {/* 4 destination nhỏ ở hàng dưới */}
-        <div className="destination-gallery">
-            <div className="row mt-4">
-                {randomDestinations.slice(3, 7).map(dest => (
-                    <div key={dest.id} className="col-lg-3 col-md-6 col-sm-6 mb-4">
-                        <div className="destination-item rounded-3 text-white">
-                            <img src={dest.image} alt={dest.name} />
-                            <div className="destination-info p-4 w-100">
-                                <div className="destination-name">
-                                    <p className="pera m-0 fs-2 fw-bold">{dest.name}</p>
-                                    <div className="location d-flex gap-2">
-                                        <i className="ri-map-pin-line"></i>
-                                        <p className="name m-0">{dest.name}</p>
-                                    </div>
-                                </div>
-                                <div className="arrow-btn">
-                                    <i className="ri-arrow-right-line fs-4"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    </div>
-</div>
 
                 {/* Explore */}
                 <div className="explore-section section">

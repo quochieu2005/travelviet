@@ -21,7 +21,8 @@
 
                 <form method="POST"
                     action="{{ route('admin.transports.store') }}"
-                    id="transportForm">
+                    id="transportForm"
+                    enctype="multipart/form-data"> {{-- Thêm enctype để upload file --}}
 
                     @csrf
 
@@ -92,8 +93,8 @@
                             </label>
 
                             <select
-                                name="destination_id"
-                                class="form-select"
+                                name="id_destination" {{-- Sửa lại thành id_destination --}}
+                                class="form-select @error('id_destination') is-invalid @enderror"
                                 required>
 
                                 <option value="">
@@ -104,7 +105,7 @@
 
                                     <option
                                         value="{{ $destination->id }}"
-                                        {{ old('destination_id') == $destination->id ? 'selected' : '' }}>
+                                        {{ old('id_destination') == $destination->id ? 'selected' : '' }}>
 
                                         {{ $destination->name }}
 
@@ -113,6 +114,12 @@
                                 @endforeach
 
                             </select>
+
+                            @error('id_destination')
+                                <div class="invalid-feedback d-block">
+                                    {{ $message }}
+                                </div>
+                            @enderror
 
                         </div>
 
@@ -126,11 +133,11 @@
                                 name="transmission"
                                 class="form-select">
 
-                                <option value="Automatic">
+                                <option value="Automatic" {{ old('transmission') == 'Automatic' ? 'selected' : '' }}>
                                     Automatic
                                 </option>
 
-                                <option value="Manual">
+                                <option value="Manual" {{ old('transmission') == 'Manual' ? 'selected' : '' }}>
                                     Manual
                                 </option>
 
@@ -225,27 +232,46 @@
                             <input
                                 type="number"
                                 name="price"
-                                class="form-control"
+                                class="form-control @error('price') is-invalid @enderror"
                                 value="{{ old('price') }}"
                                 required>
+
+                            @error('price')
+                                <div class="invalid-feedback d-block">
+                                    {{ $message }}
+                                </div>
+                            @enderror
 
                         </div>
 
                     </div>
 
-                    {{-- Image --}}
+                    {{-- Image - Sửa thành file upload --}}
                     <div class="mb-4">
 
                         <label class="form-label">
-                            Image URL
+                            Vehicle Image
                         </label>
 
                         <input
-                            type="text"
+                            type="file"
                             name="image"
-                            class="form-control"
-                            value="{{ old('image') }}"
-                            placeholder="/Image/transports1.png">
+                            id="image"
+                            class="form-control @error('image') is-invalid @enderror"
+                            accept="image/*">
+
+                        <small class="text-muted">Allowed formats: JPEG, PNG, JPG, GIF, SVG. Max size: 2MB</small>
+
+                        @error('image')
+                            <div class="invalid-feedback d-block">
+                                {{ $message }}
+                            </div>
+                        @enderror
+
+                        {{-- Preview ảnh --}}
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <img id="previewImg" src="#" alt="Preview" class="rounded" width="150" height="100" style="object-fit: cover;">
+                        </div>
 
                     </div>
 
@@ -333,6 +359,21 @@ nameInput?.addEventListener('input', function(){
 
 slugInput?.addEventListener('input', function(){
     manualSlug = true;
+});
+
+// Preview ảnh trước khi upload
+document.getElementById('image')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            previewImg.src = event.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
 });
 
 </script>

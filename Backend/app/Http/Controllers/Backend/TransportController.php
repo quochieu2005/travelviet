@@ -29,7 +29,7 @@ class TransportController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'id_destination' => 'required|exists:destinations,id',
             'mileage' => 'nullable',
             'transmission' => 'nullable',
@@ -38,10 +38,26 @@ class TransportController extends Controller
             'rating' => 'nullable|numeric',
             'review' => 'nullable|integer',
             'price' => 'required|numeric',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Sửa thành file upload
         ]);
 
         $data['slug'] = Str::slug($data['name']);
+
+        // Xử lý upload ảnh
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $publicId = 'travelviet/transports/' . $data['slug'];
+            
+            $uploadResult = app(\App\Services\CloudinaryService::class)->upload(
+                $image->getRealPath(),
+                $publicId
+            );
+            
+            $imageUrl = $uploadResult['url'] ?? null;
+        }
+        
+        $data['image'] = $imageUrl;
 
         Transport::create($data);
 
@@ -62,7 +78,7 @@ class TransportController extends Controller
     public function update(Request $request, Transport $transport)
     {
         $data = $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'id_destination' => 'required|exists:destinations,id',
             'mileage' => 'nullable',
             'transmission' => 'nullable',
@@ -71,10 +87,26 @@ class TransportController extends Controller
             'rating' => 'nullable|numeric',
             'review' => 'nullable|integer',
             'price' => 'required|numeric',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Sửa thành file upload
         ]);
 
         $data['slug'] = Str::slug($data['name']);
+
+        // Xử lý upload ảnh mới nếu có
+        $imageUrl = $transport->image; // Giữ ảnh cũ
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $publicId = 'travelviet/transports/' . $data['slug'];
+            
+            $uploadResult = app(\App\Services\CloudinaryService::class)->upload(
+                $image->getRealPath(),
+                $publicId
+            );
+            
+            $imageUrl = $uploadResult['url'] ?? null;
+        }
+        
+        $data['image'] = $imageUrl;
 
         $transport->update($data);
 

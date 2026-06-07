@@ -6,9 +6,8 @@ import 'react-toastify/dist/ReactToastify.css'
 
 function Transport() {
     const [transports, setTransports] = useState([]);
-    const [destinations, setDestinations] = useState([]); // State lưu danh mục điểm đến động từ DB
+    const [destinations, setDestinations] = useState([]);
     
-    // Quản lý trạng thái các bộ lọc (Ràng buộc dữ liệu với Form)
     const [filters, setFilters] = useState({
         destination_id: '',
         transmission: '',
@@ -17,7 +16,6 @@ function Transport() {
 
     const { cartItems, addTOCart } = useContext(CartContext);
 
-    // 1. Lấy danh sách điểm đến đổ vào Selectbox Filter khi component khởi tạo
     useEffect(() => {
         // Gọi đến hàm getTransportDestinations() trong Controller của bạn
         axios.get('http://127.0.0.1:8000/api/transport-destinations')
@@ -29,7 +27,6 @@ function Transport() {
             .catch(err => console.error("Error loading destinations:", err));
     }, []);
 
-    // 2. Tự động gọi lại API lấy danh sách phương tiện mỗi khi có bộ lọc thay đổi
     useEffect(() => {
         const fetchTransports = async () => {
             try {
@@ -39,7 +36,6 @@ function Transport() {
                 if (filters.transmission) params.transmission = filters.transmission;
                 if (filters.search) params.search = filters.search;
                 
-                // Truyền params lên Laravel Controller xử lý `->where()`
                 const response = await axios.get('http://127.0.0.1:8000/api/transports', { params });
                 
                 if (response.data && response.data.success) {
@@ -52,9 +48,8 @@ function Transport() {
         };
 
         fetchTransports();
-    }, [filters]); // Khóa chính: filters thay đổi thì hàm chạy lại
+    }, [filters]);
 
-    // Hàm xử lý cập nhật state khi user tương tác với bộ lọc
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({
@@ -171,7 +166,7 @@ function Transport() {
                                             <div className="transport-card p-3 shadow-sm h-10 d-flex flex-column">
                                                 <div className="position-relative mb-3">
                                                     <img
-                                                        src={getImage(transport.image)}
+                                                        src={transport.image}
                                                         className="img-fluid w-100 rounded-3"
                                                         alt={transport.name}
                                                     />

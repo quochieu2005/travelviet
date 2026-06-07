@@ -6,11 +6,9 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\FacebookAuthController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\BlogApiController;
-<<<<<<< HEAD
 use App\Http\Controllers\Api\PricingController;
-=======
+use App\Http\Controllers\Api\TourApiController;
 use App\Http\Controllers\Api\TransportApiController;
->>>>>>> origin/main
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +24,9 @@ Route::post('pricing-inquiries', [PricingController::class, 'store']);
 
 Route::get('/hotels', [App\Http\Controllers\Api\HotelController::class, 'index']);
 Route::get('/hotels/{slug}', [App\Http\Controllers\Api\HotelController::class, 'show']);
+
+Route::get('/tours',        [TourApiController::class, 'index']);
+Route::get('/tours/{slug}', [TourApiController::class, 'show']);
 
 Route::prefix('blog')->group(function () {
     // Public routes

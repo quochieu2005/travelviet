@@ -109,7 +109,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Blog Post Routes
         Route::resource('blogs', \App\Http\Controllers\Backend\BlogController::class);
 
-<<<<<<< HEAD
         // Pricing Routes
         Route::resource('pricing', PricingPlanController::class);
 
@@ -125,9 +124,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Hotels Route
         Route::resource('hotels', App\Http\Controllers\backend\HotelController::class);
-=======
+
+        // Transport Route
         Route::resource('transports', TransportController::class);
->>>>>>> origin/main
 
     });
 });

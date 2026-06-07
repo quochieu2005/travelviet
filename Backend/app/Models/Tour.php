@@ -56,6 +56,7 @@ class Tour extends Model
         'end_date'                     => 'date',
         'included_services'            => 'array',
         'excluded_services'            => 'array',
+        'itinerary'                    => 'array',
     ];
 
     public function destination()

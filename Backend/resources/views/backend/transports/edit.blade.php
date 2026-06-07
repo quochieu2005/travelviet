@@ -16,9 +16,12 @@
             </div>
 
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.transports.update', $transport->slug) }}" id="transportForm">
+                <form method="POST" 
+                      action="{{ route('admin.transports.update', $transport) }}" 
+                      id="transportForm"
+                      enctype="multipart/form-data"> {{-- Thêm enctype --}}
                     @csrf
-                    @method('PATCH') {{-- Hoặc sử dụng @method('PUT') tùy thuộc vào cấu hình Route --}}
+                    @method('PUT') {{-- Sửa thành PUT --}}
 
                     {{-- Name + Slug --}}
                     <div class="row mb-4">
@@ -173,22 +176,37 @@
                         </div>
                     </div>
 
-                    {{-- Image --}}
+                    {{-- Image - Sửa thành file upload --}}
                     <div class="mb-4">
-                        <label class="form-label">Image URL</label>
+                        <label class="form-label">Vehicle Image</label>
                         <input
-                            type="text"
+                            type="file"
                             name="image"
-                            class="form-control"
-                            value="{{ old('image', $transport->image) }}"
-                            placeholder="/Image/transports1.png">
+                            id="image"
+                            class="form-control @error('image') is-invalid @enderror"
+                            accept="image/*">
                         
-                        {{-- Hiển thị ảnh xem trước nếu đã có ảnh --}}
+                        <small class="text-muted">Allowed formats: JPEG, PNG, JPG, GIF, WEBP. Max size: 2MB</small>
+
+                        @error('image')
+                            <div class="invalid-feedback d-block">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                        
+                        {{-- Hiển thị ảnh hiện tại --}}
                         @if($transport->image)
-                            <div class="mt-2">
-                                <img src="{{ $transport->image }}" alt="Preview" class="rounded" width="120" height="80" style="object-fit: cover;">
+                            <div class="mt-2" id="currentImage">
+                                <p class="mb-1">Current Image:</p>
+                                <img src="{{ $transport->image }}" alt="Current image" class="rounded" width="150" height="100" style="object-fit: cover;">
                             </div>
                         @endif
+
+                        {{-- Preview ảnh mới --}}
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <p class="mb-1">New Image Preview:</p>
+                            <img id="previewImg" src="#" alt="Preview" class="rounded" width="150" height="100" style="object-fit: cover;">
+                        </div>
                     </div>
 
                     {{-- Status --}}
@@ -237,7 +255,7 @@ function stringToSlug(str) {
 const nameInput = document.getElementById('name');
 const slugInput = document.getElementById('slug');
 
-// Đặt mặc định là true cho edit view để tránh tự động đè slug cũ khi người dùng chỉ chỉnh sửa các trường khác
+// Đặt mặc định là true cho edit view để tránh tự động đè slug cũ
 let manualSlug = true;
 
 nameInput?.addEventListener('input', function(){
@@ -254,6 +272,27 @@ slugInput?.addEventListener('input', function(){
 nameInput?.addEventListener('click', function() {
     if(slugInput.value === '') {
         manualSlug = false;
+    }
+});
+
+// Preview ảnh trước khi upload
+document.getElementById('image')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            previewImg.src = event.target.result;
+            preview.style.display = 'block';
+            
+            // Ẩn ảnh cũ nếu có
+            const currentImage = document.getElementById('currentImage');
+            if (currentImage) {
+                currentImage.style.display = 'none';
+            }
+        }
+        reader.readAsDataURL(file);
     }
 });
 </script>
