@@ -61,7 +61,13 @@
                 <div class="text-truncate" data-i18n="Promotions">Promotions</div>
             </a>
         </li>
-
+        <!-- Menu Transports -->
+        <li class="menu-item {{ request()->routeIs('admin.transports.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.transports.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-bus"></i>
+                <div class="text-truncate" data-i18n="Transports">Transports</div>
+            </a>
+        </li>
         <!-- Menu Images Tour -->
         <li class="menu-item {{ request()->routeIs('admin.image-tours.*') ? 'active open' : '' }}">
             <a href="{{ route('admin.image-tours.index') }}" class="menu-link">

@@ -6,7 +6,11 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\FacebookAuthController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\BlogApiController;
+<<<<<<< HEAD
 use App\Http\Controllers\Api\PricingController;
+=======
+use App\Http\Controllers\Api\TransportApiController;
+>>>>>>> origin/main
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +34,13 @@ Route::prefix('blog')->group(function () {
     Route::get('/posts/{slug}', [BlogApiController::class, 'getPostBySlug']);
     Route::get('/posts/{postId}/related', [BlogApiController::class, 'getRelatedPosts']);
     Route::get('/categories', [BlogApiController::class, 'getCategories']);
+});
+
+Route::prefix('transports')->group(function () {
+    Route::get('/', [TransportApiController::class, 'getTransports']);                        
+    Route::get('/destinations', [TransportApiController::class, 'getTransportDestinations']); 
+    Route::get('/detail/{slug}', [TransportApiController::class, 'getTransportBySlug']);     
+    Route::get('/related/{id}', [TransportApiController::class, 'getRelatedTransports']);     
 });
 
 Route::middleware('auth:sanctum')->group(function () {

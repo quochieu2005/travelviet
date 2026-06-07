@@ -32,4 +32,8 @@ class Destination extends Model
     {
         return 'slug';
     }
+    public function transports()
+{
+    return $this->hasMany(Transport::class, 'id_destination');
+}
 }

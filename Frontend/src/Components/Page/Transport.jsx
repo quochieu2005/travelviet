@@ -1,28 +1,73 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../../context/CartContext'
-import transportData from '../../data/Transport.json'
-import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
+import axios from 'axios'
 import 'react-toastify/dist/ReactToastify.css'
 
 function Transport() {
-
-    const [visibleCount, setVisibleCount] = useState(6);
+    const [transports, setTransports] = useState([]);
+    const [destinations, setDestinations] = useState([]); // State lưu danh mục điểm đến động từ DB
+    
+    // Quản lý trạng thái các bộ lọc (Ràng buộc dữ liệu với Form)
+    const [filters, setFilters] = useState({
+        destination_id: '',
+        transmission: '',
+        search: ''
+    });
 
     const { cartItems, addTOCart } = useContext(CartContext);
 
-    const transports = transportData.Transport;
+    // 1. Lấy danh sách điểm đến đổ vào Selectbox Filter khi component khởi tạo
+    useEffect(() => {
+        // Gọi đến hàm getTransportDestinations() trong Controller của bạn
+        axios.get('http://127.0.0.1:8000/api/transport-destinations')
+            .then(res => {
+                if (res.data && res.data.success) {
+                    setDestinations(res.data.data);
+                }
+            })
+            .catch(err => console.error("Error loading destinations:", err));
+    }, []);
+
+    // 2. Tự động gọi lại API lấy danh sách phương tiện mỗi khi có bộ lọc thay đổi
+    useEffect(() => {
+        const fetchTransports = async () => {
+            try {
+                // Tạo query params dựa trên các bộ lọc hiện tại
+                const params = {};
+                if (filters.destination_id) params.destination_id = filters.destination_id;
+                if (filters.transmission) params.transmission = filters.transmission;
+                if (filters.search) params.search = filters.search;
+                
+                // Truyền params lên Laravel Controller xử lý `->where()`
+                const response = await axios.get('http://127.0.0.1:8000/api/transports', { params });
+                
+                if (response.data && response.data.success) {
+                    setTransports(response.data.data.data || []);
+                }
+            } catch (error) {
+                console.error("Error fetching filtered transports:", error);
+                toast.error("Không thể tải danh sách xe theo bộ lọc");
+            }
+        };
+
+        fetchTransports();
+    }, [filters]); // Khóa chính: filters thay đổi thì hàm chạy lại
+
+    // Hàm xử lý cập nhật state khi user tương tác với bộ lọc
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const getImage = (img) => {
+        if (!img) return '';
         const name = img.split('/').pop();
         return new URL(`../../assets/${name}`, import.meta.url).href;
     }
-
-    const toVND = (usd) => (usd * 25000).toLocaleString('vi-VN') + '₫';
-
-    const loadMore = () => {
-        setVisibleCount(prev => prev + 6);
-    };
 
     const handleBookNow = (transport) => {
         const item = {
@@ -31,7 +76,7 @@ function Transport() {
             type: 'transport',
             slug: transport.slug,
             price: transport.price,
-            location: transport.location,
+            location: transport.destination?.name || 'N/A',
             person: 1,
         }
 
@@ -51,6 +96,7 @@ function Transport() {
 
                 <div className="container">
                     <div className="row">
+                        {/* SIDEBAR FILTER */}
                         <div className="col-lg-3 mb-4">
                             <div className="filter-sidebar shadow-sm">
                                 <h5 className="fw-bold mb-4 d-flex align-items-center">
@@ -58,148 +104,130 @@ function Transport() {
                                     Advanced Filter
                                 </h5>
 
-                                <fieldset className='filter-section'>
+                                {/* Tìm kiếm theo tên xe */}
+                                <fieldset className='filter-section mb-3'>
+                                    <legend><i className="ri-search-line me-2"></i>Search Vehicle</legend>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        name="search"
+                                        placeholder="Type car name..."
+                                        value={filters.search}
+                                        onChange={handleFilterChange}
+                                    />
+                                </fieldset>
+
+                                {/* Lọc theo Destination động lấy từ DB */}
+                                <fieldset className='filter-section mb-3'>
                                     <legend><i className="ri-map-pin-line me-2"></i>Destination</legend>
-                                    <select className='form-select'>
+                                    <select 
+                                        className='form-select'
+                                        name="destination_id"
+                                        value={filters.destination_id}
+                                        onChange={handleFilterChange}
+                                    >
                                         <option value="">Select Destination</option>
-                                        <option>USA</option>
-                                        <option>Turkey</option>
-                                        <option>Switerland</option>
-                                        <option>ThaiLand</option>
-                                        <option>VietNam</option>
+                                        {destinations.map(dest => (
+                                            <option key={dest.id} value={dest.id}>
+                                                {dest.name} ({dest.transport_count})
+                                            </option>
+                                        ))}
                                     </select>
                                 </fieldset>
 
-                                <fieldset className='filter-section'>
-                                    <legend><i className="ri-flight-takeoff-line me-2"></i>transport Type</legend>
-                                    <select className='form-select'>
-                                        <option value="">Select Type</option>
-                                        <option>Adventure</option>
-                                        <option>Relaxation</option>
-                                        <option>Cultural</option>
+                                {/* Lọc theo loại hộp số (Transmission) */}
+                                <fieldset className='filter-section mb-3'>
+                                    <legend><i className="ri-settings-3-line me-2"></i>Transmission</legend>
+                                    <select 
+                                        className='form-select'
+                                        name="transmission"
+                                        value={filters.transmission}
+                                        onChange={handleFilterChange}
+                                    >
+                                        <option value="">Select Transmission</option>
+                                        <option value="Automatic">Automatic</option>
+                                        <option value="Manual">Manual</option>
                                     </select>
                                 </fieldset>
 
-                                <fieldset className='filter-section'>
+                                {/* Các filter tĩnh giữ nguyên giao diện */}
+                                <fieldset className='filter-section mb-3'>
                                     <legend><i className="ri-calendar-event-line me-2"></i>Date From</legend>
                                     <input type="date" className='form-control' />
                                 </fieldset>
-
-                                <fieldset className='filter-section'>
+                                <fieldset className='filter-section mb-3'>
                                     <legend><i className="ri-user-smile-line me-2"></i>Guests</legend>
                                     <input type="number" className='form-control' placeholder='number of Guest' min={1} />
-                                </fieldset>
-
-                                <fieldset className='filter-section'>
-                                    <legend><i className="ri-star-smile-line me-2"></i>Traveler Rating</legend>
-                                    <div className="d-flex flex-wrap gap-2">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <span key={star} className='rating-badge'>
-                                                <i className="ri-star-fill text-warning me-1"></i>
-                                                {star}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className='filter-section'>
-                                    <legend><i className="ri-price-tag-3-line me-2"></i>Special Offers</legend>
-                                    <div className="form-check">
-                                        <input type="checkbox" id='likely' className="form-check-input" />
-                                        <label htmlFor="likely" className='form-check-label'>Likely to Sell Out</label>
-                                    </div>
-                                    <div className="form-check">
-                                        <input type="checkbox" id='discount' className="form-check-input" />
-                                        <label htmlFor="discount" className='form-check-label'>Winter Discount</label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className='filter-section'>
-                                    <legend><i className="ri-translate-2 me-2"></i>Languages</legend>
-                                    {["English", "Spanish", "French", "Bangla"].map((lang, i) => (
-                                        <div className="form-check" key={i}>
-                                            <input type="checkbox" className="form-check-input" id={lang} />
-                                            <label htmlFor={lang} className='form-check-label'>{lang}</label>
-                                        </div>
-                                    ))}
                                 </fieldset>
                             </div>
                         </div>
 
+                        {/* LIST TRANSPORTS */}
                         <div className="col-lg-9">
                             <div className="row">
-                                {/* Hiển thị danh sách transport */}
-                                {transports && transports.slice(0, visibleCount).map((transport) => (
-                                    <div className="col-md-6 col-lg-4 mb-4" key={transport.id}>
-                                        <div className="transport-card p-3 shadow-sm h-10 d-flex flex-column">
-                                            <div className="position-relative mb-3">
-                                                <img
-                                                    src={getImage(transport.image)}
-                                                    className="img-fluid w-100 rounded-3"
-                                                    alt={transport.name}
-                                                />
-                                                <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
-                                                    <i className="ri-star-fill me-1"></i>
-                                                    {transport.rating} ({transport.review})
-                                                </span>
-                                                
-                                            </div>
-
-                                            <div className="card-body py-3">
-                                                <h6 className='fw-bold mb-1'>{transport.name}</h6>
-                                                <div className="text-muted mb-2">
-                                                    <i className="ri-map-pin-line me-1"></i>
-                                                    {transport.location}
+                                {transports.length > 0 ? (
+                                    transports.map((transport) => (
+                                        <div className="col-md-6 col-lg-4 mb-4" key={transport.id}>
+                                            <div className="transport-card p-3 shadow-sm h-10 d-flex flex-column">
+                                                <div className="position-relative mb-3">
+                                                    <img
+                                                        src={getImage(transport.image)}
+                                                        className="img-fluid w-100 rounded-3"
+                                                        alt={transport.name}
+                                                    />
+                                                    <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
+                                                        <i className="ri-star-fill me-1"></i>
+                                                        {transport.rating} ({transport.review})
+                                                    </span>
                                                 </div>
 
-                                                <div className="d-flex flex-wrap gap-2 text-muted mb-3 small">
-                                                    <span className='d-flex align-items-center'>
-                                                        <i className="ri-roadster-line me-1 text-primary"></i>
-                                                        {transport.mileage}
-                                                    </span>
-                                                    <span className='d-flex align-items-center'>
-                                                        <i className="ri-settings-3-line me-1 text-primary"></i>
-                                                        {transport.transmission}
-                                                    </span>
-                                                    <span className='d-flex align-items-center'>
-                                                        <i className="ri-steering-line me-1 text-primary"></i>
-                                                        Seats: {transport.seats}
-                                                    </span>
-                                                    <span>
-                                                        <i className="ri-repeat-line me-1 text-primary"></i>
-                                                        Trips: {transport.trips}
-                                                    </span>
-                                                    
+                                                <div className="card-body py-3">
+                                                    <h6 className='fw-bold mb-1'>{transport.name}</h6>
+                                                    <div className="text-muted mb-2">
+                                                        <i className="ri-map-pin-line me-1"></i>
+                                                        {transport.destination?.name || 'No Location'}
+                                                    </div>
+
+                                                    <div className="d-flex flex-wrap gap-2 text-muted mb-3 small">
+                                                        <span className='d-flex align-items-center'>
+                                                            <i className="ri-roadster-line me-1 text-primary"></i>
+                                                            {transport.mileage}
+                                                        </span>
+                                                        <span className='d-flex align-items-center'>
+                                                            <i className="ri-settings-3-line me-1 text-primary"></i>
+                                                            {transport.transmission}
+                                                        </span>
+                                                        <span className='d-flex align-items-center'>
+                                                            <i className="ri-steering-line me-1 text-primary"></i>
+                                                            Seats: {transport.seats}
+                                                        </span>
+                                                        <span>
+                                                            <i className="ri-repeat-line me-1 text-primary"></i>
+                                                            Trips: {transport.trips}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="d-flex justify-content-between align-items-center mt-auto">
+                                                        <span className='fw-semibold text-primary'>
+                                                            {(transport.price).toLocaleString('vi-VN')}₫ <small>/day</small>
+                                                        </span>
+                                                        <button
+                                                            className="btn btn-outline-primary btn-sm text-white"
+                                                            onClick={() => handleBookNow(transport)}
+                                                        >
+                                                            Book Now
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                
-
-                                                <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                    <span className='fw-semibold text-primary'>
-                                                        {(transport.price).toLocaleString('vi-VN')}₫ <small>/day</small>
-                                                    </span>
-
-                                                    <button
-                                                        className="btn btn-outline-primary btn-sm text-white"
-                                                        onClick={() => handleBookNow(transport)}
-                                                    >
-                                                        Book Now
-                                                    </button>
-                                                </div>
-
                                             </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="col-12 text-center py-5 text-muted">
+                                        Không tìm thấy phương tiện nào phù hợp với bộ lọc.
                                     </div>
-                                ))}
+                                )}
                             </div>
-                            
-                            {/* Nút Load More */}
-                            {transports && visibleCount < transports.length && (
-                                <div className="text-center mt-4">
-                                    <button className="btn btn-primary" onClick={loadMore}>
-                                        Load More
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,8 @@ use App\Http\Controllers\Backend\ImageController;
 use App\Http\Controllers\backend\PricingPlanController;
 use App\Http\Controllers\Backend\PromotionsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\CategoriesController;
+use App\Http\Controllers\Backend\TransportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -107,6 +109,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Blog Post Routes
         Route::resource('blogs', \App\Http\Controllers\Backend\BlogController::class);
 
+<<<<<<< HEAD
         // Pricing Routes
         Route::resource('pricing', PricingPlanController::class);
 
@@ -122,6 +125,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Hotels Route
         Route::resource('hotels', App\Http\Controllers\backend\HotelController::class);
+=======
+        Route::resource('transports', TransportController::class);
+>>>>>>> origin/main
 
     });
 });
