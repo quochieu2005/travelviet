@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\BlogApiController;
 use App\Http\Controllers\Api\TransportApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\RestaurantApiController;
 
 Route::get('/home', [HomeApiController::class, 'index']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -31,6 +31,11 @@ Route::prefix('transports')->group(function () {
     Route::get('/destinations', [TransportApiController::class, 'getTransportDestinations']); 
     Route::get('/detail/{slug}', [TransportApiController::class, 'getTransportBySlug']);     
     Route::get('/related/{id}', [TransportApiController::class, 'getRelatedTransports']);     
+});
+
+Route::prefix('restaurants')->group(function () {
+    Route::get('/', [RestaurantApiController::class, 'getRestaurants']);            
+    Route::get('/detail/{slug}', [RestaurantApiController::class, 'getRestaurantBySlug']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

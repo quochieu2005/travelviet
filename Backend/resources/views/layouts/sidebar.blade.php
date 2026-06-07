@@ -60,6 +60,13 @@
                 <div class="text-truncate" data-i18n="Transports">Transports</div>
             </a>
         </li>
+
+        <li class="menu-item {{ request()->routeIs('admin.restaurants.*') ? 'active open' : '' }}">
+            <a href="{{ route('admin.restaurants.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-restaurant"></i>
+                <div class="text-truncate" data-i18n="Restaurants">Restaurants</div>
+            </a>
+        </li>
         <!-- Menu Images Tour -->
         <li class="menu-item {{ request()->routeIs('admin.image-tours.*') ? 'active open' : '' }}">
             <a href="{{ route('admin.image-tours.index') }}" class="menu-link">

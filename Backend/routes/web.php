@@ -109,7 +109,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('blogs', \App\Http\Controllers\Backend\BlogController::class);
 
         Route::resource('transports', TransportController::class);
-
+        
+        Route::patch('restaurants/{restaurant}/toggle-status', [App\Http\Controllers\Backend\RestaurantController::class, 'toggleStatus'])
+         ->name('restaurants.toggle-status');
+        Route::resource('restaurants', \App\Http\Controllers\Backend\RestaurantController::class);
     });
 });
 

@@ -1,20 +1,49 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../../context/CartContext'
-import restaurantData from '../../data/Restaurant.json'
+import restaurantApi from "/src/services/restaurantApi.js";
 import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 function Restaurants() {
-
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
   const { cartItems, addTOCart } = useContext(CartContext);
-  const restaurants = restaurantData.Restaurants;
 
-  const getImage = (img) => {
-    const name = img.split('/').pop().replace('restaurant', 'restaurent');
-    return new URL(`../../assets/${name}`, import.meta.url).href;
-  }
+  // Gọi API lấy dữ liệu thực tế khi component mount
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        const response = await restaurantApi.getRestaurants();
+        
+        // Tùy theo cấu trúc JSON Backend của bạn trả về dạng { data: [...] } hay mảng trực tiếp
+        if (response && response.data) {
+          setRestaurants(response.data);
+        } else if (Array.isArray(response)) {
+          setRestaurants(response);
+        }
+      } catch (error) {
+        toast.error("Failed to load restaurants data from server");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  // Hàm xử lý hiển thị ảnh: Nếu là link từ Cloudinary (bắt đầu bằng http) thì dùng luôn, 
+  // nếu không thì fallback về ảnh mặc định của hệ thống.
+  const getRestaurantImage = (imagePath) => {
+    if (!imagePath) return 'https://placehold.co/600x400?text=No+Image';
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    return new URL(`../../assets/${imagePath}`, import.meta.url).href;
+  };
 
   const loadMore = () => {
     setVisibleCount(prev => prev + 6);
@@ -47,6 +76,7 @@ function Restaurants() {
 
         <div className="container">
           <div className="row">
+            {/* Sidebar Filter giữ nguyên */}
             <div className="col-lg-3 mb-4">
               <div className="filter-sidebar shadow-sm">
                 <h5 className="fw-bold mb-4 d-flex align-items-center">
@@ -122,63 +152,79 @@ function Restaurants() {
               </div>
             </div>
 
+            {/* List Restaurants */}
             <div className="col-lg-9">
-              <div className="row">
-                {restaurants && restaurants.slice(0, visibleCount).map((restaurant) => (
-                  <div className="col-md-6 col-lg-4 mb-4 d-flex" key={restaurant.id}>
-                    {/* Thêm d-flex vào col để các card bằng chiều cao */}
-                    <div className="transport-card p-3 shadow-sm d-flex flex-column w-100">
-                      <div className="position-relative mb-3">
-                        <img
-                          src={getImage(restaurant.image)}
-                          className="img-fluid w-100 rounded-3"
-                          alt={restaurant.title}
-                          style={{ height: '200px', objectFit: 'cover' }}
-                        />
-                        <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
-                          <i className="ri-star-fill me-1"></i>
-                          {restaurant.rating} ({restaurant.reviews})
-                        </span>
-                      </div>
-
-                      <div className="card-body py-3 d-flex flex-column flex-grow-1">
-                        <h6 className='fw-bold mb-1'>{restaurant.title}</h6>
-                        <div className="text-muted mb-2">
-                          <i className="ri-map-pin-line me-1"></i>
-                          {restaurant.location}
-                        </div>
-
-                        <div className="d-flex align-items-center gap-2 mb-3">
-                          <span className='badge bg-dark'>{restaurant.tag}</span>
-                          {restaurant.oldprice && (
-                            <small className="text-muted text-decoration-line-through">
-                              ${restaurant.oldprice}
-                            </small>
-                          )}
-                          <small className="fw-semibold text-success">
-                            ${restaurant.price}
-                          </small>
-                        </div>
-
-                        <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
-                          <span className='fw-semibold text-primary fs-6'>
-                            ${restaurant.price}
-                            <small className="text-muted fw-normal"> /meal</small>
-                          </span>
-                          <button
-                            className="btn btn-outline-primary btn-sm"
-                            onClick={() => handleBookTable(restaurant)}
-                          >
-                            Book Table
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+              {loading ? (
+                // Hiển thị trạng thái Loading trong khi chờ API phản hồi
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading restaurants...</span>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="row">
+                  {restaurants && restaurants.length > 0 ? (
+                    restaurants.slice(0, visibleCount).map((restaurant) => (
+                      <div className="col-md-6 col-lg-4 mb-4 d-flex" key={restaurant.id}>
+                        <div className="transport-card p-3 shadow-sm d-flex flex-column w-100">
+                          <div className="position-relative mb-3">
+                            <img
+                              src={getRestaurantImage(restaurant.image)}
+                              className="img-fluid w-100 rounded-3"
+                              alt={restaurant.title}
+                              style={{ height: '200px', objectFit: 'cover' }}
+                            />
+                            <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
+                              <i className="ri-star-fill me-1"></i>
+                              {restaurant.rating ?? 0} ({restaurant.reviews ?? 0})
+                            </span>
+                          </div>
 
-              {restaurants && visibleCount < restaurants.length && (
+                          <div className="card-body py-3 d-flex flex-column flex-grow-1">
+                            <h6 className='fw-bold mb-1'>{restaurant.title}</h6>
+                            <div className="text-muted mb-2 text-truncate">
+                              <i className="ri-map-pin-line me-1"></i>
+                              {restaurant.location}
+                            </div>
+
+                            <div className="d-flex align-items-center gap-2 mb-3">
+                              {restaurant.tag && <span className='badge bg-dark'>{restaurant.tag}</span>}
+                              {restaurant.oldprice && (
+                                <small className="text-muted text-decoration-line-through">
+                                  ${restaurant.oldprice}
+                                </small>
+                              )}
+                              <small className="fw-semibold text-success">
+                                ${restaurant.price}
+                              </small>
+                            </div>
+
+                            <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
+                              <span className='fw-semibold text-primary fs-6'>
+                                ${restaurant.price}
+                                <small className="text-muted fw-normal"> /meal</small>
+                              </span>
+                              <button
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={() => handleBookTable(restaurant)}
+                              >
+                                Book Table
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-12 text-center py-5">
+                      <p className="text-muted">No restaurants found.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Load More Button */}
+              {!loading && restaurants && visibleCount < restaurants.length && (
                 <div className="text-center mt-4">
                   <button className="btn btn-primary" onClick={loadMore}>
                     Load More
