@@ -26,11 +26,16 @@ function Tours() {
     }, []);
 
     const handleBookNow = (tour) => {
-        const alreadyInCart = cartItems.find((item) => item.id === tour.id);
+        const alreadyInCart = cartItems.find((item) => item.id === tour.id && item.type === 'tour');
         if (alreadyInCart) {
             toast.warning("Tour đã có trong giỏ hàng!");
         } else {
-            addTOCart({ ...tour, quantity: 1, type: 'tour' });
+            addTOCart({
+                ...tour,
+                type: 'tour',
+                quantityAdult: 1,
+                quantityChild: 0,
+            });
             toast.success(`Đã thêm ${tour.title} vào giỏ!`);
         }
     }
@@ -137,6 +142,11 @@ function Tours() {
                                                         onError={(e) => { e.target.src = '/placeholder.jpg' }}
                                                     />
                                                 </Link>
+                                                <i className="ri-heart-line fs-5 text-white position-absolute top-0 start-0 m-2"
+                                                    role="button"
+                                                    style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
+                                                ></i>
+                                                {/* Icon giỏ hàng bên phải */}
                                                 <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
                                                     role="button"
                                                     onClick={() => handleBookNow(tour)}

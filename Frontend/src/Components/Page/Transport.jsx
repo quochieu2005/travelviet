@@ -73,6 +73,9 @@ function Transport() {
             price: transport.price,
             location: transport.destination?.name || 'N/A',
             person: 1,
+            image: transport.image,  
+            quantity: 1,             
+            days: 1, 
         }
 
         const alreadyExists = cartItems.find(h => h.id === transport.id);

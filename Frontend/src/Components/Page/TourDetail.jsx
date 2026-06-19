@@ -55,24 +55,24 @@ function TourDetail() {
     const parseItinerary = (data) => {
         if (!data) return [];
         if (Array.isArray(data)) return data;
-        
+
         try {
             const parsed = JSON.parse(data);
             if (Array.isArray(parsed)) return parsed;
-        } catch (e) {}
-        
+        } catch (e) { }
+
         if (typeof data === 'string' && data.trim()) {
             const days = [];
             const lines = data.split(/\r?\n/);
             let currentDay = null;
             let currentDescription = [];
-            
+
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
-                
+
                 const dayMatch = line.match(/^(NGÀY|Ngày|DAY|Day)\s+(\d+)[:\s]*(.*)$/i);
-                
+
                 if (dayMatch) {
                     if (currentDay) {
                         days.push({
@@ -86,17 +86,17 @@ function TourDetail() {
                     currentDescription.push(line);
                 }
             }
-            
+
             if (currentDay) {
                 days.push({
                     title: currentDay,
                     description: currentDescription.join('\n')
                 });
             }
-            
+
             return days;
         }
-        
+
         return [];
     };
 
@@ -116,7 +116,7 @@ function TourDetail() {
     };
 
     const handleAddToCart = () => {
-        const alreadyAdded = cartItems.find((item) => item.id === tour.id);
+        const alreadyAdded = cartItems.find((item) => item.id === tour.id && item.type === 'tour');
         if (alreadyAdded) {
             toast.info("Tour đã có trong giỏ hàng!", { position: "top-right", autoClose: 1500, theme: "dark" });
             return;
@@ -165,9 +165,9 @@ function TourDetail() {
     const priceChild = parseFloat(tour.price_child) || 0;
     const adultDiscount = calcDiscount(priceAdult, parseFloat(tour.price_discount_percent));
     const childDiscount = calcDiscount(priceChild, parseFloat(tour.price_child_discount_percent));
-    
+
     const itineraryItems = parseItinerary(tour.itinerary);
-    
+
     // Lấy dữ liệu included/excluded an toàn
     const includedItems = getServiceItems(tour.included_services || tour.included);
     const excludedItems = getServiceItems(tour.excluded_services || tour.excluded);
@@ -203,6 +203,7 @@ function TourDetail() {
                             </SwiperSlide>
                         )}
                     </Swiper>
+
                 </div>
             </div>
 

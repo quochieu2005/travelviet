@@ -18,15 +18,18 @@ function Restaurants() {
         setLoading(true);
         const response = await restaurantApi.getRestaurants();
         
-        // Tùy theo cấu trúc JSON Backend của bạn trả về dạng { data: [...] } hay mảng trực tiếp
+        // Tùy theo cấu trúc JSON Backend của bạn trả về
         if (response && response.data) {
           setRestaurants(response.data);
         } else if (Array.isArray(response)) {
           setRestaurants(response);
+        } else {
+          setRestaurants([]);
         }
       } catch (error) {
         toast.error("Failed to load restaurants data from server");
         console.error(error);
+        setRestaurants([]);
       } finally {
         setLoading(false);
       }
@@ -35,8 +38,20 @@ function Restaurants() {
     fetchRestaurants();
   }, []);
 
-  // Hàm xử lý hiển thị ảnh: Nếu là link từ Cloudinary (bắt đầu bằng http) thì dùng luôn, 
-  // nếu không thì fallback về ảnh mặc định của hệ thống.
+  // Hàm lấy tên destination
+  const getDestinationName = (restaurant) => {
+    // Kiểm tra nếu có destination relation
+    if (restaurant.destination && restaurant.destination.name) {
+      return restaurant.destination.name;
+    }
+    // Fallback cho trường hợp dữ liệu cũ
+    if (restaurant.location) {
+      return restaurant.location;
+    }
+    return 'Đang cập nhật';
+  };
+
+  // Hàm xử lý hiển thị ảnh
   const getRestaurantImage = (imagePath) => {
     if (!imagePath) return 'https://placehold.co/600x400?text=No+Image';
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
@@ -49,24 +64,39 @@ function Restaurants() {
     setVisibleCount(prev => prev + 6);
   };
 
+  // Hàm handleBookTable
   const handleBookTable = (restaurant) => {
+    // Kiểm tra đã tồn tại chưa (cả id và type)
+    const alreadyExists = cartItems.find(
+      item => item.id === restaurant.id && item.type === 'restaurant'
+    );
+    
+    if (alreadyExists) {
+      toast.info(`${restaurant.title} đã có trong giỏ hàng!`);
+      return;
+    }
+
+    // Tạo item với đầy đủ thông tin
     const item = {
       id: restaurant.id,
       title: restaurant.title,
       type: 'restaurant',
       slug: restaurant.slug,
-      price: restaurant.price,
-      location: restaurant.location,
-      person: 1,
+      price: parseFloat(restaurant.price) || 0,
+      location: getDestinationName(restaurant), // Sửa thành getDestinationName
+      image: getRestaurantImage(restaurant.image),
+      quantity: 1,
+      adults: 2,
+      children: 0,
     }
 
-    const alreadyExists = cartItems.find(h => h.id === restaurant.id);
-    if (!alreadyExists) {
-      addTOCart(item);
-      toast.success(`${restaurant.title} added to cart`);
-    } else {
-      toast.info("Already in cart");
-    }
+    addTOCart(item);
+    toast.success(`Đã thêm ${restaurant.title} vào giỏ hàng!`);
+  }
+
+  // Format tiền VND
+  const formatVND = (price) => {
+    return Number(price || 0).toLocaleString('vi-VN') + '₫';
   }
 
   return (
@@ -76,7 +106,7 @@ function Restaurants() {
 
         <div className="container">
           <div className="row">
-            {/* Sidebar Filter giữ nguyên */}
+            {/* Sidebar Filter */}
             <div className="col-lg-3 mb-4">
               <div className="filter-sidebar shadow-sm">
                 <h5 className="fw-bold mb-4 d-flex align-items-center">
@@ -155,7 +185,6 @@ function Restaurants() {
             {/* List Restaurants */}
             <div className="col-lg-9">
               {loading ? (
-                // Hiển thị trạng thái Loading trong khi chờ API phản hồi
                 <div className="text-center py-5">
                   <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading restaurants...</span>
@@ -166,13 +195,17 @@ function Restaurants() {
                   {restaurants && restaurants.length > 0 ? (
                     restaurants.slice(0, visibleCount).map((restaurant) => (
                       <div className="col-md-6 col-lg-4 mb-4 d-flex" key={restaurant.id}>
-                        <div className="transport-card p-3 shadow-sm d-flex flex-column w-100">
+                        <div className="restaurant-card p-3 shadow-sm d-flex flex-column w-100">
                           <div className="position-relative mb-3">
                             <img
                               src={getRestaurantImage(restaurant.image)}
                               className="img-fluid w-100 rounded-3"
                               alt={restaurant.title}
                               style={{ height: '200px', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://placehold.co/600x400?text=No+Image';
+                              }}
                             />
                             <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
                               <i className="ri-star-fill me-1"></i>
@@ -184,31 +217,29 @@ function Restaurants() {
                             <h6 className='fw-bold mb-1'>{restaurant.title}</h6>
                             <div className="text-muted mb-2 text-truncate">
                               <i className="ri-map-pin-line me-1"></i>
-                              {restaurant.location}
+                              {/* SỬA: Hiển thị tên destination thay vì location */}
+                              {getDestinationName(restaurant)}
                             </div>
 
                             <div className="d-flex align-items-center gap-2 mb-3">
                               {restaurant.tag && <span className='badge bg-dark'>{restaurant.tag}</span>}
                               {restaurant.oldprice && (
                                 <small className="text-muted text-decoration-line-through">
-                                  ${restaurant.oldprice}
+                                  {formatVND(restaurant.oldprice)}
                                 </small>
                               )}
-                              <small className="fw-semibold text-success">
-                                ${restaurant.price}
-                              </small>
                             </div>
 
                             <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
                               <span className='fw-semibold text-primary fs-6'>
-                                ${restaurant.price}
-                                <small className="text-muted fw-normal"> /meal</small>
+                                {formatVND(restaurant.price)}
+                                <small className="text-muted fw-normal"> /suất</small>
                               </span>
                               <button
-                                className="btn btn-outline-primary btn-sm"
+                                className="btn btn-outline-primary btn-sm text-white"
                                 onClick={() => handleBookTable(restaurant)}
                               >
-                                Book Table
+                                Đặt bàn
                               </button>
                             </div>
                           </div>
@@ -217,7 +248,7 @@ function Restaurants() {
                     ))
                   ) : (
                     <div className="col-12 text-center py-5">
-                      <p className="text-muted">No restaurants found.</p>
+                      <p className="text-muted">Không tìm thấy nhà hàng nào.</p>
                     </div>
                   )}
                 </div>
@@ -227,7 +258,7 @@ function Restaurants() {
               {!loading && restaurants && visibleCount < restaurants.length && (
                 <div className="text-center mt-4">
                   <button className="btn btn-primary" onClick={loadMore}>
-                    Load More
+                    Xem thêm
                   </button>
                 </div>
               )}

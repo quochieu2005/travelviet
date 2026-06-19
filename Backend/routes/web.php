@@ -127,10 +127,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Transport Route
         Route::resource('transports', TransportController::class);
-        
+
         Route::patch('restaurants/{restaurant}/toggle-status', [App\Http\Controllers\Backend\RestaurantController::class, 'toggleStatus'])
-         ->name('restaurants.toggle-status');
+            ->name('restaurants.toggle-status');
         Route::resource('restaurants', \App\Http\Controllers\Backend\RestaurantController::class);
+
+        Route::resource('users', App\Http\Controllers\Backend\UserController::class);
+
+        // Additional routes
+        Route::patch('users/{id}/toggle-status', [App\Http\Controllers\Backend\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::post('users/{id}/add-balance', [App\Http\Controllers\Backend\UserController::class, 'addBalance'])->name('users.add-balance');
     });
 });
 

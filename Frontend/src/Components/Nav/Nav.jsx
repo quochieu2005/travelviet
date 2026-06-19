@@ -1,50 +1,26 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
+import { CartContext } from '../../context/CartContext'; // ✅ thêm
 
 function Nav() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const { cartItems } = useContext(CartContext); // ✅ lấy trực tiếp từ context
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [cartCount, setCartCount] = useState(0);
 
-    // Đọc cart
-    useEffect(() => {
-        const updateCount = () => {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            setCartCount(cart.length);
-        }
-        updateCount();
-        window.addEventListener('cartUpdate', updateCount);
-        window.addEventListener('storage', updateCount);
-        return () => {
-            window.removeEventListener('cartUpdate', updateCount);
-            window.removeEventListener('storage', updateCount);
-        }
-    }, []);
+    // ✅ cartCount tính trực tiếp từ cartItems — reactive, không cần useEffect
+    const cartCount = cartItems.length;
 
     const toggleMenu = () => setIsMenuOpen(prev => !prev);
     const closeMenu = () => setIsMenuOpen(false);
     const getInitial = (name) => name ? name.charAt(0).toUpperCase() : '?';
 
-    // Hàm xử lý điều hướng
-    const handleNavigate = (path) => {
-        navigate(path);
-        closeMenu();
-    };
-
-    const handleLoginClick = () => {
-        navigate('/Login');
-        closeMenu();
-    };
-
-    const handleProfileClick = () => {
-        navigate('/profile');
-        closeMenu();
-    };
-
+    const handleNavigate = (path) => { navigate(path); closeMenu(); };
+    const handleLoginClick = () => { navigate('/Login'); closeMenu(); };
+    const handleProfileClick = () => { navigate('/profile'); closeMenu(); };
     const handleLogoutClick = () => {
         logout();
         toast.success('Logged out successfully!');
@@ -64,14 +40,14 @@ function Nav() {
                                 <span className="bi bi-telephone me-3" style={{ backgroundColor: "#222839", padding: '8px', borderRadius: '50%' }}></span>
                                 <div className="call-text">
                                     <p className="m-0">Call Anytime</p>
-                                    <h4 className="fs-6 m-0 fw-semibold">00 (888) +123456</h4>
+                                    <h4 className="fs-6 m-0 fw-semibold">0364395437</h4>
                                 </div>
                             </div>
 
                             {/* LOGO */}
                             <div className="logo">
                                 <h1 className='p-0 m-0 text-uppercase fw-semibold'>
-                                    <button 
+                                    <button
                                         onClick={() => handleNavigate('/')}
                                         className='text-white text-decoration-none navbar-brand fs-2 m-0'
                                         style={{ background: 'none', border: 'none', cursor: 'pointer' }}
@@ -89,17 +65,19 @@ function Nav() {
                                 </div>
                                 <div className="divider gradient-divider"></div>
 
-                                <button 
+                                <button
                                     onClick={() => handleNavigate('/cart')}
                                     className='cartpage-cart-link position-relative'
                                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                                 >
                                     <i className="bi bi-cart text-white fs-5"></i>
-                                    <span className="cart-count">{cartCount}</span>
+                                    {cartCount > 0 && (
+                                        <span className="cart-count">{cartCount}</span>
+                                    )}
                                 </button>
 
                                 {!user ? (
-                                    <button 
+                                    <button
                                         onClick={handleLoginClick}
                                         className='btn sign-up btn-custome text-white rounded-5 px-4 py-2 fs-6 fw-semibold'
                                         style={{ border: 'none', cursor: 'pointer' }}
@@ -113,17 +91,10 @@ function Nav() {
                                         style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                                     >
                                         <div style={{
-                                            width: 36,
-                                            height: 36,
-                                            borderRadius: '50%',
-                                            backgroundColor: '#f26f55',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 700,
-                                            fontSize: 15,
-                                            color: 'white',
-                                            flexShrink: 0
+                                            width: 36, height: 36, borderRadius: '50%',
+                                            backgroundColor: '#f26f55', display: 'flex',
+                                            alignItems: 'center', justifyContent: 'center',
+                                            fontWeight: 700, fontSize: 15, color: 'white', flexShrink: 0
                                         }}>
                                             {getInitial(user.full_name)}
                                         </div>

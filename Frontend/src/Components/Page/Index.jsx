@@ -140,21 +140,21 @@ function Index() {
     // Hàm random lấy 2 mảng tours khác nhau, không trùng nhau
     const getUniqueRandomTours = (allTours, count1 = 10, count2 = 10) => {
         if (!allTours || allTours.length === 0) return [[], []];
-        
+
         // Random toàn bộ mảng tours
         const shuffled = [...allTours];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
-        
+
         // Lấy số lượng cần cho tour 1
         const tours1 = shuffled.slice(0, Math.min(count1, shuffled.length));
-        
+
         // Lấy phần còn lại cho tour 2 (không trùng)
         const remaining = shuffled.slice(Math.min(count1, shuffled.length));
         const tours2 = remaining.slice(0, Math.min(count2, remaining.length));
-        
+
         return [tours1, tours2];
     };
 
@@ -285,11 +285,21 @@ function Index() {
     };
 
     const handleBookNow = (tour) => {
-        const alreadyInCart = cartItems.find((item) => item.id === tour.id);
+        // ✅ Kiểm tra cả id và type
+        const alreadyInCart = cartItems.find(
+            (item) => item.id === tour.id && item.type === 'tour'
+        );
+
         if (alreadyInCart) {
             toast.warning("Tour đã có trong giỏ hàng!");
         } else {
-            addTOCart({ ...tour, quantity: 1 });
+            addTOCart({
+                ...tour,
+                type: 'tour',           // quan trọng: phân biệt loại sản phẩm
+                quantityAdult: 1,       // mặc định 1 người lớn
+                quantityChild: 0,       // mặc định 0 trẻ em
+                quantity: 1,            // giữ để tương thích
+            });
             toast.success(`Đã thêm ${tour.title} vào giỏ!`);
         }
     };
@@ -638,6 +648,10 @@ function Index() {
                                                             }}
                                                         />
                                                     </Link>
+                                                    <i className="ri-heart-line fs-5 text-white position-absolute top-0 start-0 m-2"
+                                                        role="button"
+                                                        style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
+                                                    ></i>
                                                     <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
                                                         role="button"
                                                         onClick={() => handleBookNow(tour)}
@@ -791,6 +805,10 @@ function Index() {
                                                     <Link to={`/TourDetail/${tour.slug}`}>
                                                         <img src={getTourImage(tour)} className="card-img-top rounded" alt={tour.title} />
                                                     </Link>
+                                                    <i className="ri-heart-line fs-5 text-white position-absolute top-0 start-0 m-2"
+                                                        role="button"
+                                                        style={{ cursor: 'pointer', backgroundColor: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '50%' }}
+                                                    ></i>
                                                     <i className="ri-shopping-cart-2-line fs-5 text-white position-absolute top-0 end-0 m-2"
                                                         role="button"
                                                         onClick={() => handleBookNow(tour)}

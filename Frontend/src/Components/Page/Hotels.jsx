@@ -32,34 +32,52 @@ function Hotels() {
 
     const getImage = (img) => {
         if (!img) return '';
+        if (img.startsWith('http://') || img.startsWith('https://')) {
+            return img;
+        }
         const name = img.split('/').pop();
         return new URL(`../../assets/${name}`, import.meta.url).href;
     }
 
-    const toVND = (usd) => (usd * 25000).toLocaleString('vi-VN') + '₫';
+    const formatVND = (price) => {
+        return Number(price || 0).toLocaleString('vi-VN') + '₫';
+    }
 
     const loadMore = () => {
         setVisibleCount(prev => prev + 6);
     };
 
+    // ✅ SỬA LẠI HÀM handleBookNow
     const handleBookNow = (hotel) => {
+        // Kiểm tra đã tồn tại chưa (cả id và type)
+        const alreadyExists = cartItems.find(
+            item => item.id === hotel.id && item.type === 'hotel'
+        );
+        
+        if (alreadyExists) {
+            toast.info(`${hotel.name} đã có trong giỏ hàng!`);
+            return;
+        }
+
+        // Tạo item với đầy đủ thông tin
         const item = {
             id: hotel.id,
             title: hotel.name,
-            type: 'hotel',
+            type: 'hotel',                    // ✅ quan trọng
             slug: hotel.slug,
-            price: hotel.price,
-            location: hotel.location,
-            person: 1,
+            price: parseFloat(hotel.price) || 0,
+            location: hotel.location || 'N/A',
+            image: hotel.thumbnail || getImage(hotel.image),  // ✅ thêm image
+            quantity: 1,                      // số phòng
+            nights: 1,                        // số đêm (có thể cho user chọn sau)
+            // Thêm các tiện ích nếu cần hiển thị trong cart
+            facilities: hotel.facilities || [],
+            rating: hotel.rating || 0,
+            reviews: hotel.reviews || 0
         }
 
-        const alreadyExists = cartItems.find(h => h.id === hotel.id);
-        if (!alreadyExists) {
-            addTOCart(item);
-            toast.success(`${hotel.name} added to cart`);
-        } else {
-            toast.info("Already in cart");
-        }
+        addTOCart(item);
+        toast.success(`Đã thêm ${hotel.name} vào giỏ hàng!`);
     }
 
     return (
@@ -145,63 +163,89 @@ function Hotels() {
                         </div>
 
                         <div className="col-lg-9">
-                            <div className="row">
-                                {hotels.slice(0, visibleCount).map((hotel) => (
-                                    <div className="col-md-6 col-lg-4 mb-4" key={hotel.id}>
-                                        <div className="hotel-card p-3 shadow-sm h-10">
-                                            <div className="position-relative mb-3">
-                                                <img
-                                                    src={hotel.thumbnail}
-                                                    className="img-fluid w-100 rounded-3"
-                                                    alt={hotel.name}
-                                                />
-                                                <span className='badge position-absolute top-0 end-0 m-2'>
-                                                    <i className="ri-star-fill me-1"></i>
-                                                    {hotel.rating} ({hotel.reviews})
-                                                </span>
-                                            </div>
-
-                                            <div className="card-body py-3">
-                                                <h6 className='fw-bold mb-1'>{hotel.name}</h6>
-                                                <div className="text-muted mb-2">
-                                                    <i className="ri-map-pin-line me-1"></i>
-                                                    {hotel.location}
-                                                </div>
-
-                                                <div className="d-flex flex-wrap gap-2 text-muted mb-3 small">
-                                                    {hotel.facilities?.map((item, idx) => (
-                                                        <span key={idx} className='d-flex align-items-center'>
-                                                            <i className={`${item.icon} me-1`}></i>
-                                                            {item.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-
-                                                <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                    <span className='fw-semibold text-primary'>
-                                                        {Number(hotel.price).toLocaleString('vi-VN', { maximumFractionDigits: 0 })}₫ <small>/Person</small>
-                                                    </span>
-
-                                                    <button
-                                                        className="btn btn-outline-primary btn-sm text-white"
-                                                        onClick={() => handleBookNow(hotel)}
-                                                    >
-                                                        Book Now
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                            {loading ? (
+                                <div className="text-center py-5">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading hotels...</span>
                                     </div>
-                                ))}
-                            </div>
-
-                            {/* Load More Button */}
-                            {visibleCount < hotels.length && (
-                                <div className="text-center mt-4">
-                                    <button className="btn btn-primary" onClick={loadMore}>
-                                        Load More
-                                    </button>
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="row">
+                                        {hotels.length > 0 ? (
+                                            hotels.slice(0, visibleCount).map((hotel) => (
+                                                <div className="col-md-6 col-lg-4 mb-4" key={hotel.id}>
+                                                    <div className="hotel-card p-3 shadow-sm h-100 d-flex flex-column">
+                                                        <div className="position-relative mb-3">
+                                                            <img
+                                                                src={hotel.thumbnail || getImage(hotel.image)}
+                                                                className="img-fluid w-100 rounded-3"
+                                                                alt={hotel.name}
+                                                                style={{ height: '200px', objectFit: 'cover' }}
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = 'https://placehold.co/600x400?text=No+Image';
+                                                                }}
+                                                            />
+                                                            <span className='badge position-absolute top-0 end-0 m-2 bg-primary text-white'>
+                                                                <i className="ri-star-fill me-1"></i>
+                                                                {hotel.rating || 0} ({hotel.reviews || 0})
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="card-body py-3 d-flex flex-column flex-grow-1">
+                                                            <h6 className='fw-bold mb-1'>{hotel.name}</h6>
+                                                            <div className="text-muted mb-2">
+                                                                <i className="ri-map-pin-line me-1"></i>
+                                                                {hotel.location}
+                                                            </div>
+
+                                                            <div className="d-flex flex-wrap gap-2 text-muted mb-3 small">
+                                                                {hotel.facilities?.slice(0, 3).map((item, idx) => (
+                                                                    <span key={idx} className='d-flex align-items-center'>
+                                                                        <i className={`${item.icon || 'ri-check-line'} me-1`}></i>
+                                                                        {item.name}
+                                                                    </span>
+                                                                ))}
+                                                                {hotel.facilities?.length > 3 && (
+                                                                    <span className='d-flex align-items-center'>
+                                                                        +{hotel.facilities.length - 3} more
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
+                                                                <span className='fw-semibold text-primary'>
+                                                                    {formatVND(hotel.price)} <small>/đêm</small>
+                                                                </span>
+
+                                                                <button
+                                                                    className="btn btn-outline-primary btn-sm text-white"
+                                                                    onClick={() => handleBookNow(hotel)}
+                                                                >
+                                                                    Đặt phòng
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p className="text-muted">Không tìm thấy khách sạn nào.</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Load More Button */}
+                                    {!loading && visibleCount < hotels.length && (
+                                        <div className="text-center mt-4">
+                                            <button className="btn btn-primary" onClick={loadMore}>
+                                                Xem thêm
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

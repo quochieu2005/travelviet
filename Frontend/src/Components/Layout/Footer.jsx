@@ -37,7 +37,7 @@ function Footer() {
                         <div className="col-lg-3 col-md-6">
                             <h4 className="mb-3">Contact</h4>
                             <p className="small"><i className="ri-map-pin-line me-2"></i>Nguyễn Đình Chiểu, Quận 1, TP.HCM</p>
-                            <p className="small"><i className="ri-phone-line me-2"></i>(00) +8888 23145 542</p>
+                            <p className="small"><i className="ri-phone-line me-2"></i>0364395437</p>
                             <p className="small"><i className="ri-mail-line me-2"></i>example@gmail.com</p>
                         </div>
 

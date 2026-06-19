@@ -12,14 +12,20 @@ class Restaurant extends Model
     protected $fillable = [
         'title',
         'slug',
-        'location',
+        'destination_id',
         'price',
         'oldprice',
         'rating',
         'reviews',
         'tag',
-        'image'
+        'image',
+        'status'
     ];
+
+    public function destination()
+    {
+        return $this->belongsTo(Destination::class);
+    }
 
     public function getRouteKeyName()
     {

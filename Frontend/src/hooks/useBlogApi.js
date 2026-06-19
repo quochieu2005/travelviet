@@ -1,4 +1,3 @@
-// src/hooks/useBlogApi.js
 import { useState, useEffect, useCallback } from 'react';
 import blogApiService from '../services/blogApi';
 
